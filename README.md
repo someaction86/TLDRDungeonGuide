@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 3.0 — WoW: Midnight Season 1**
+**Version 1.0 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -46,13 +46,11 @@ You can filter the guide to show only your role's section using the **My Role** 
 | Dungeon | Bosses |
 |---|---|
 | Den of Nalorakk | The Hoardmonger, Sentinel of Winter, Nalorakk |
-| Magister's Terrace | Arcanotron Custos, Seranel Sunlash, Gemellus, Degentrius |
 | Murder Row | Kystia Manaheart, Zaen Bladesorrow, Xathuux, Lithiel Cinderfury |
-| Windrunner Spire | Emberdawn, Derelict Duo, Commander Kroluk, The Restless Heart |
-| Maisara Caverns | Muro'jin & Nekraxx, Vordaza, Rak'tul |
-| Nexus Point Xenas | Chief Corewright Kasreth, Corewarden Nysarra, Lothraxion |
 | The Blinding Vale | Lightblossom Trinity, Ikuzz, Lightwarden Ruia, Ziekket |
 | Voidscar Arena | Taz'Rah, Atroxus, Charonus |
+
+> **Note:** Preseason dungeons are the 4 Midnight-original dungeons not in the Season 1 M+ rotation. The 4 legacy/revisited dungeons (Windrunner Spire, Magister's Terrace, Maisara Caverns, Nexus Point Xenas) appear in Season 1 only — access them via left-click.
 
 ---
 
@@ -147,9 +145,9 @@ Resets all settings including colors, font, role filter, and output mode back to
 ## Notes
 
 - Settings are saved per account and persist across sessions and reloads
-- The preseason dungeons that overlap with Season 1 (Magister's Terrace, Windrunner Spire, Maisara Caverns, Nexus Point Xenas) show full role-specific guides since they are relevant in both contexts
-- Preseason-only dungeons that appear in Season 1 reference each other to avoid duplication
+- **Season 1 (left-click):** 8 dungeons in the M+ rotation — 4 new Midnight dungeons + 4 returning legacy dungeons
+- **Preseason (right-click):** 4 Midnight-original dungeons not in the Season 1 M+ rotation (Murder Row, Den of Nalorakk, The Blinding Vale, Voidscar Arena)
 
 ---
 
-*Built for WoW: Midnight — guides reflect beta tuning and will be updated as the expansion releases.*
+*Built for WoW: Midnight — guides sourced from verified boss mechanics and will be updated as patches release.*
