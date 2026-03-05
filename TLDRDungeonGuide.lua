@@ -26,6 +26,8 @@ local defaults = {
     fontFace    = "Fonts/FRIZQT__.TTF",
     -- Role filter
     role        = "all",   -- "all" | "tank" | "healer" | "dps"
+    -- Bar visibility
+    barVisibility = "always",  -- "always" | "dungeon" | "hidden"
 }
 
 local function GetSetting(key)
@@ -1429,7 +1431,7 @@ optionsBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 -- ============================================================
 
 local optPanel = CreateFrame("Frame","MPGOptionsPanel",UIParent,"BackdropTemplate")
-optPanel:SetSize(330,740)
+optPanel:SetSize(330,828)
 optPanel:SetPoint("CENTER",UIParent,"CENTER",0,0)
 optPanel:SetMovable(true)
 optPanel:SetClampedToScreen(true)
@@ -1520,10 +1522,61 @@ winRadio:SetScript("OnClick",  function() SetSetting("outputMode","window"); Ref
 
 HRule(-88)
 
+-- ── BAR VISIBILITY ────────────────────────────────────────────
+SectionLabel(-96, "Bar Visibility")
+
+local visOptions = {
+    { key="always",  label="Always Show" },
+    { key="dungeon", label="Dungeons Only" },
+    { key="hidden",  label="Always Hide" },
+}
+local visRadios = {}
+
+local function ApplyBarVisibility()
+    local v = GetSetting("barVisibility")
+    if v == "hidden" then
+        frame:Hide()
+    elseif v == "dungeon" then
+        local inInstance, instanceType = IsInInstance()
+        if inInstance and (instanceType == "party" or instanceType == "raid") then
+            frame:Show()
+        else
+            frame:Hide()
+        end
+    else -- "always"
+        frame:Show()
+    end
+end
+
+local function RefreshVisRadios()
+    local cur = GetSetting("barVisibility")
+    for _, vr in ipairs(visRadios) do
+        vr.radio:SetChecked(vr.key == cur)
+    end
+end
+
+for i, vo in ipairs(visOptions) do
+    local radio = CreateFrame("CheckButton",nil,optPanel,"UIRadioButtonTemplate")
+    radio:SetSize(20,20)
+    radio:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14,-112-(i-1)*22)
+    local lbl = optPanel:CreateFontString(nil,"OVERLAY","GameFontNormal")
+    lbl:SetPoint("LEFT",radio,"RIGHT",2,0)
+    lbl:SetText(vo.label)
+    radio:SetScript("OnClick", function()
+        SetSetting("barVisibility", vo.key)
+        RefreshVisRadios()
+        ApplyBarVisibility()
+    end)
+    visRadios[i] = {radio=radio, key=vo.key}
+end
+RefreshVisRadios()
+
+HRule(-180)
+
 -- ── BAR WIDTH ─────────────────────────────────────────────────
-SectionLabel(-96, "Bar Width")
-local bwLbl = ValueLabel(-96, GetSetting("barWidth").." px")
-local bwSlider = MakeSlider("BarWidth",-114, 160,400,10, GetSetting("barWidth"), "160","400")
+SectionLabel(-188, "Bar Width")
+local bwLbl = ValueLabel(-188, GetSetting("barWidth").." px")
+local bwSlider = MakeSlider("BarWidth",-206, 160,400,10, GetSetting("barWidth"), "160","400")
 bwSlider:SetScript("OnValueChanged", function(self,val)
     val = math.floor(val/10+0.5)*10
     SetSetting("barWidth",val)
@@ -1531,12 +1584,12 @@ bwSlider:SetScript("OnValueChanged", function(self,val)
     frame:SetWidth(val)
 end)
 
-HRule(-134)
+HRule(-226)
 
 -- ── BAR TRANSPARENCY ──────────────────────────────────────────
-SectionLabel(-142, "Bar Transparency")
-local alphaLbl = ValueLabel(-142, math.floor(GetSetting("barAlpha")*100).."%")
-local alphaSlider = MakeSlider("Alpha",-160, 10,100,5, math.floor(GetSetting("barAlpha")*100), "10%","100%")
+SectionLabel(-234, "Bar Transparency")
+local alphaLbl = ValueLabel(-234, math.floor(GetSetting("barAlpha")*100).."%")
+local alphaSlider = MakeSlider("Alpha",-252, 10,100,5, math.floor(GetSetting("barAlpha")*100), "10%","100%")
 alphaSlider:SetScript("OnValueChanged", function(self,val)
     val = math.floor(val/5+0.5)*5
     SetSetting("barAlpha", val/100)
@@ -1544,12 +1597,12 @@ alphaSlider:SetScript("OnValueChanged", function(self,val)
     ApplyBarAppearance()
 end)
 
-HRule(-180)
+HRule(-272)
 
 -- ── FONT SIZE ─────────────────────────────────────────────────
-SectionLabel(-188, "Popup Font Size")
-local fontLbl = ValueLabel(-188, GetSetting("fontSize").."pt")
-local fontSlider = MakeSlider("Font",-206, 9,20,1, GetSetting("fontSize"), "9pt","20pt")
+SectionLabel(-280, "Popup Font Size")
+local fontLbl = ValueLabel(-280, GetSetting("fontSize").."pt")
+local fontSlider = MakeSlider("Font",-298, 9,20,1, GetSetting("fontSize"), "9pt","20pt")
 fontSlider:SetScript("OnValueChanged", function(self,val)
     val = math.floor(val+0.5)
     SetSetting("fontSize",val)
@@ -1557,10 +1610,10 @@ fontSlider:SetScript("OnValueChanged", function(self,val)
     ApplyFontSize()
 end)
 
-HRule(-226)
+HRule(-318)
 
 -- ── TITLE COLOR SWATCHES ──────────────────────────────────────
-SectionLabel(-234, "Title / Heading Color")
+SectionLabel(-326, "Title / Heading Color")
 
 local titlePresets = {
     {name="Gold",   r=1.00,g=0.84,b=0.00},
@@ -1576,7 +1629,7 @@ local titleSwatches = {}
 for i, p in ipairs(titlePresets) do
     local sw = CreateFrame("Button",nil,optPanel)
     sw:SetSize(32,22)
-    sw:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14+(i-1)*43,-252)
+    sw:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14+(i-1)*43,-344)
     local bg = sw:CreateTexture(nil,"BACKGROUND")
     bg:SetAllPoints(); bg:SetColorTexture(p.r,p.g,p.b,1)
     local hl = sw:CreateTexture(nil,"OVERLAY")
@@ -1596,10 +1649,10 @@ for i, p in ipairs(titlePresets) do
     sw:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
-HRule(-282)
+HRule(-374)
 
 -- ── BACKGROUND COLOR SWATCHES ─────────────────────────────────
-SectionLabel(-290, "Bar Background Color")
+SectionLabel(-382, "Bar Background Color")
 
 local bgPresets = {
     {name="Dark Navy",  r=0.05,g=0.05,b=0.15},
@@ -1614,7 +1667,7 @@ local bgPresets = {
 for i, p in ipairs(bgPresets) do
     local sw = CreateFrame("Button",nil,optPanel)
     sw:SetSize(32,22)
-    sw:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14+(i-1)*43,-308)
+    sw:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14+(i-1)*43,-400)
     local bg = sw:CreateTexture(nil,"BACKGROUND")
     bg:SetAllPoints(); bg:SetColorTexture(p.r,p.g,p.b,1)
     -- White border so dark colors are visible
@@ -1632,7 +1685,7 @@ for i, p in ipairs(bgPresets) do
 end
 
 -- ── ROLE FILTER ───────────────────────────────────────────────
-SectionLabel(-346, "My Role (filters guide content)")
+SectionLabel(-438, "My Role (filters guide content)")
 
 local roleOptions = {
     {key="all",    label="All Roles"},
@@ -1653,7 +1706,7 @@ for i, ro in ipairs(roleOptions) do
     local xOff = 14 + (i-1)*74
     local radio = CreateFrame("CheckButton",nil,optPanel,"UIRadioButtonTemplate")
     radio:SetSize(20,20)
-    radio:SetPoint("TOPLEFT",optPanel,"TOPLEFT",xOff,-364)
+    radio:SetPoint("TOPLEFT",optPanel,"TOPLEFT",xOff,-456)
     local lbl = optPanel:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
     lbl:SetPoint("LEFT",radio,"RIGHT",2,0)
     local displayLabel = ro.label
@@ -1668,17 +1721,45 @@ for i, ro in ipairs(roleOptions) do
 end
 RefreshRoleRadios()
 
-HRule(-390)
+HRule(-482)
 
 -- ── FONT PICKER ───────────────────────────────────────────────
-SectionLabel(-398, "Popup Font")
+SectionLabel(-490, "Popup Font")
+
+-- Probe common addon locations for Expressway.ttf.
+-- Many popular addons ship it (ElvUI, Details!, SharedMedia, etc).
+-- We create a throwaway FontString, attempt SetFont, then check if
+-- GetFont() returns our path back — WoW returns nil/default if the
+-- file didn't load, so this is a reliable existence check.
+local function FindExpresswayFont()
+    local candidates = {
+        "Interface/AddOns/TLDRDungeonGuide/Fonts/Expressway.ttf",
+        "Interface/AddOns/ElvUI/Core/Media/Fonts/Expressway.ttf",
+        "Interface/AddOns/ElvUI_MerathilisUI/Core/Media/Fonts/Expressway.ttf",
+        "Interface/AddOns/SharedMedia/fonts/Expressway.ttf",
+        "Interface/AddOns/LSMedia/Fonts/Expressway.ttf",
+        "Interface/AddOns/Details/Fonts/Expressway.ttf",
+    }
+    local tester = UIParent:CreateFontString(nil, "ARTWORK")
+    for _, path in ipairs(candidates) do
+        tester:SetFont(path, 12, "")
+        local found = tester:GetFont()
+        if found and found == path then
+            tester:Hide()
+            return path
+        end
+    end
+    tester:Hide()
+    return nil
+end
+
+local expresswayPath = FindExpresswayFont()
 
 local fontOptions = {
-    { name="Friz Quadrata (Default)", file="Fonts/FRIZQT__.TTF"   },
-    { name="Arial Narrow",            file="Fonts/ARIALN.TTF"      },
-    { name="Morpheus (Fantasy)",      file="Fonts/MORPHEUS.TTF"    },
-    { name="Skurri (Runic)",          file="Fonts/SKURRI.TTF"      },
-    { name="Expressway (Clean)",      file="Fonts/PARADIGM.TTF"    },
+    { name="Friz Quadrata (Default)", file="Fonts/FRIZQT__.TTF",  preview="Fonts/FRIZQT__.TTF", available=true          },
+    { name="Arial Narrow",            file="Fonts/ARIALN.TTF",    preview="Fonts/ARIALN.TTF",   available=true          },
+    { name="Nimrod MT",               file="Fonts/NIM_____.ttf",  preview="Fonts/ARIALN.TTF",   available=true          },
+    { name="Expressway",              file=expresswayPath or "",   preview="Fonts/ARIALN.TTF",   available=expresswayPath~=nil },
 }
 
 local fontBtns = {}
@@ -1696,25 +1777,42 @@ end
 for i, fo in ipairs(fontOptions) do
     local btn = CreateFrame("Button",nil,optPanel,"BackdropTemplate")
     btn:SetSize(290,20)
-    btn:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14,-414-(i-1)*24)
+    btn:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14,-506-(i-1)*24)
     btn:SetBackdrop({bgFile="Interface/Tooltips/UI-Tooltip-Background",tile=true,tileSize=8,edgeSize=0})
     btn:SetBackdropColor(0.10,0.10,0.10,1)
     local lbl = btn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
     lbl:SetAllPoints()
     lbl:SetJustifyH("LEFT")
     lbl:SetPoint("LEFT",btn,"LEFT",6,0)
-    -- Preview the font name in its own font
-    lbl:SetFont(fo.file, 11, "")
-    lbl:SetText(fo.name)
-    lbl:SetTextColor(0.9,0.9,0.9,1)
+    lbl:SetFont(fo.preview, 11, "")
+    if fo.available then
+        lbl:SetText(fo.name)
+        lbl:SetTextColor(0.9,0.9,0.9,1)
+    else
+        lbl:SetText(fo.name .. " |cFF888888(not found — place Expressway.ttf in addon Fonts/ folder)|r")
+        lbl:SetTextColor(0.5,0.5,0.5,1)
+    end
     btn:SetScript("OnClick", function()
+        if not fo.available then return end
         SetSetting("fontFace", fo.file)
         RefreshFontButtons()
         ApplyFontSize()
         RefreshPopupIfOpen()
     end)
-    btn:SetScript("OnEnter", function(self) self:SetBackdropColor(0.20,0.18,0.05,1) end)
-    btn:SetScript("OnLeave", function(self) RefreshFontButtons() end)
+    btn:SetScript("OnEnter", function(self)
+        if fo.available then
+            self:SetBackdropColor(0.20,0.18,0.05,1)
+        end
+        if not fo.available then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText("Expressway not found", 1, 0.3, 0.3)
+            GameTooltip:AddLine("Place Expressway.ttf in:", 0.8, 0.8, 0.8)
+            GameTooltip:AddLine("  AddOns/TLDRDungeonGuide/Fonts/", 1, 1, 0.5)
+            GameTooltip:AddLine("or install ElvUI, Details!, or SharedMedia", 0.8, 0.8, 0.8)
+            GameTooltip:Show()
+        end
+    end)
+    btn:SetScript("OnLeave", function(self) RefreshFontButtons(); GameTooltip:Hide() end)
     fontBtns[i] = {btn=btn, file=fo.file}
 end
 RefreshFontButtons()
@@ -1764,13 +1862,13 @@ local function MakeTextColorRow(labelText, settingKey, yOff)
     end
 end
 
-HRule(-542)
-MakeTextColorRow("Number Color",  "numColor",  -550)
-HRule(-582)
-MakeTextColorRow("Ability Color", "abilColor", -590)
-HRule(-622)
-MakeTextColorRow("Info Text Color","infoColor", -630)
-HRule(-662)
+HRule(-634)
+MakeTextColorRow("Number Color",  "numColor",  -642)
+HRule(-674)
+MakeTextColorRow("Ability Color", "abilColor", -682)
+HRule(-714)
+MakeTextColorRow("Info Text Color","infoColor", -722)
+HRule(-754)
 
 -- ── BUTTONS ───────────────────────────────────────────────────
 local resetBtn = CreateFrame("Button",nil,optPanel,"UIPanelButtonTemplate")
@@ -1790,10 +1888,13 @@ resetBtn:SetScript("OnClick", function()
     SetSetting("abilColor",   defaults.abilColor)
     SetSetting("infoColor",   defaults.infoColor)
     SetSetting("role",        defaults.role)
+    SetSetting("barVisibility", defaults.barVisibility)
     ApplyBarAppearance()
     RefreshTitleText()
     RefreshRadios()
     RefreshRoleRadios()
+    RefreshVisRadios()
+    ApplyBarVisibility()
     ApplyFontSize()
     RefreshFontButtons()
     RefreshPopupIfOpen()
@@ -1920,28 +2021,34 @@ end)
 --  SLASH COMMANDS
 -- ============================================================
 
-SLASH_MPG1 = "/mpg"
-SlashCmdList["MPG"] = function(msg)
+SLASH_TLDR1 = "/tldr"
+SlashCmdList["TLDR"] = function(msg)
     msg = string.lower(string.trim(msg or ""))
-    if     msg=="hide"              then frame:Hide(); print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET.." Hidden. /mpg show to restore.")
-    elseif msg=="show"              then frame:Show()
+    if     msg=="hide"              then SetSetting("barVisibility","hidden"); RefreshVisRadios(); frame:Hide(); print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET.." Hidden. /tldr show to restore.")
+    elseif msg=="show"              then SetSetting("barVisibility","always"); RefreshVisRadios(); frame:Show()
     elseif msg=="options" or msg=="opt" then optPanel:Show(); optPanel:Raise()
     elseif msg==""                  then OpenDungeonMenu()
-    else print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET.." Commands: /mpg | /mpg hide | /mpg show | /mpg options")
+    else print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET.." Commands: /tldr | /tldr hide | /tldr show | /tldr options")
     end
 end
 
 -- ============================================================
---  LOGIN — apply saved settings
+--  LOGIN + ZONE CHANGE — apply saved settings and visibility
 -- ============================================================
 
 local initFrame = CreateFrame("Frame")
 initFrame:RegisterEvent("PLAYER_LOGIN")
-initFrame:SetScript("OnEvent", function()
+initFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+initFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+initFrame:SetScript("OnEvent", function(self, event)
     ApplyBarAppearance()
     RefreshTitleText()
     ApplyFontSize()
     RefreshRadios()
-    print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET
-          .." Midnight S1 loaded!  Click the bar to browse  |  Gear icon for options  |  /mpg")
+    RefreshVisRadios()
+    ApplyBarVisibility()
+    if event == "PLAYER_LOGIN" then
+        print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET
+              .." Midnight S1 loaded!  Click the bar to browse  |  Gear icon for options  |  /tldr")
+    end
 end)
