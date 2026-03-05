@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.0 — WoW: Midnight Season 1**
+**Version 1.1 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -35,7 +35,7 @@ You can filter the guide to show only your role's section using the **My Role** 
 |---|---|
 | Algeth'ar Academy | Vexamus, Overgrown Ancient, Crawth, Echo of Doragosa |
 | Magister's Terrace | Arcanotron Custos, Seranel Sunlash, Gemellus, Degentrius |
-| Maisara Caverns | Muro'jin & Nekraxx, Vordaza, Rak'tul |
+| Maisara Caverns | Muro'jin & Nekraxx, Vordaza, Rak'tul, Vessel of Souls |
 | Nexus Point Xenas | Chief Corewright Kasreth, Corewarden Nysarra, Lothraxion |
 | Pit of Saron | Forgemaster Garfrost, Ick & Krick, Scourgelord Tyrannus |
 | Skyreach | Ranjit, Araknath, Rukhran, High Sage Viryx |
@@ -62,10 +62,10 @@ You can filter the guide to show only your role's section using the **My Role** 
 | **Right-click** bar | Opens Preseason dungeon menu |
 | **Drag** bar title | Moves the bar |
 | **Gear icon** | Opens Options panel |
-| `/mpg` | Opens Season 1 dungeon menu |
-| `/mpg hide` | Hides the bar |
-| `/mpg show` | Restores the bar |
-| `/mpg options` | Opens Options panel |
+| `/tldr` | Opens Season 1 dungeon menu |
+| `/tldr hide` | Hides the bar (sets visibility to Always Hide) |
+| `/tldr show` | Restores the bar (sets visibility to Always Show) |
+| `/tldr options` | Opens Options panel |
 
 ---
 
@@ -75,6 +75,12 @@ Click the gear icon (⚙) on the right side of the bar to open settings.
 
 ### Output Mode
 Choose whether boss guides are printed to your **chat window** or displayed in a **resizable popup window**. The popup can be dragged anywhere on screen and resized by dragging the bottom-right corner.
+
+### Bar Visibility
+Control when the guide bar is shown:
+- **Always Show** — Bar is visible at all times (default)
+- **Dungeons Only** — Bar automatically hides in the open world and reappears whenever you enter an instanced dungeon or raid. Reacts to every zone transition.
+- **Always Hide** — Bar stays hidden until changed here or via `/tldr show`
 
 ### My Role
 Filter guide content to only show sections relevant to your role:
@@ -101,12 +107,11 @@ Seven color swatches for the heading and title color used in the guide output.
 Seven dark color options for the bar and popup window background.
 
 ### Popup Font
-Five font options that preview their own name in the selected font:
+Four font options for the popup guide window:
 - **Friz Quadrata** — Classic WoW default font
 - **Arial Narrow** — Clean, compact, easy to read
-- **Morpheus** — Fantasy style, used in quest text
-- **Skurri** — Runic style
-- **Expressway** — Modern clean font
+- **Nimrod MT** — Elegant readable serif, distinct from Friz Quadrata
+- **Expressway** — Clean modern font. Automatically detected if you have ElvUI, Details!, SharedMedia, or any other addon that ships it installed. If not found the button shows greyed out with a tooltip explaining where to place the file.
 
 ### Text Colors
 Three independent color pickers for guide text:
@@ -117,13 +122,14 @@ Three independent color pickers for guide text:
 All color changes apply live to any open guide window.
 
 ### Reset to Defaults
-Resets all settings including colors, font, role filter, and output mode back to defaults.
+Resets all settings including colors, font, role filter, visibility mode, and output mode back to defaults.
 
 ---
 
 ## Tips
 
 - **Role filter is the most useful setting** — set it to your role before a run and you only see what's relevant to you
+- **Dungeons Only visibility** is great if you want the bar out of the way while questing but ready the moment you zone in
 - **Popup window mode** is recommended — it stays on screen while you play, doesn't flood your chat, and you can scroll back up if needed
 - **Hover over the bar** to see a tooltip reminding you that left = Season 1, right = Preseason
 - **Dragging**: click and hold the title text area to drag. The gear icon is a separate button — clicking that opens options instead
@@ -133,11 +139,11 @@ Resets all settings including colors, font, role filter, and output mode back to
 ## Slash Commands
 
 ```
-/mpg              Open Season 1 dungeon menu
-/mpg hide         Hide the guide bar
-/mpg show         Show the guide bar
-/mpg options      Open the Options panel
-/mpg opt          Shorthand for options
+/tldr              Open Season 1 dungeon menu
+/tldr hide         Hide the bar (sets visibility to Always Hide)
+/tldr show         Show the bar (sets visibility to Always Show)
+/tldr options      Open the Options panel
+/tldr opt          Shorthand for options
 ```
 
 ---
@@ -150,4 +156,21 @@ Resets all settings including colors, font, role filter, and output mode back to
 
 ---
 
-*Built for WoW: Midnight — guides sourced from verified boss mechanics and will be updated as patches release.*
+## Changelog
+
+### v1.1
+- **Bar Visibility toggle** — New option in the Options panel with three modes: Always Show, Dungeons Only (auto-hides in the open world, auto-shows on zone-in to any instance), and Always Hide. Reacts to `ZONE_CHANGED_NEW_AREA` and `PLAYER_ENTERING_WORLD` events. `/tldr hide` and `/tldr show` now sync with this setting.
+- **Font picker overhauled** — Removed Morpheus and Skurri (hard to read). Added Nimrod MT as a clean readable serif. Expressway is now auto-detected at login by probing common addon locations (ElvUI, Details!, SharedMedia, LSMedia, and the addon's own `Fonts/` subfolder). If found anywhere it becomes available; if not, the button shows greyed out with a tooltip. No manual font installation needed if you already run a popular UI addon.
+- **Maisara Caverns — full boss rewrite** — All three bosses were previously fabricated. Replaced with verified mechanics: Carrion Swoop/Freezing Trap interaction, Unstable Phantom collision mechanic, Necrotic Convergence shield phase, Crush Souls totem cleave, Soulrending Roar Spectral Residue system.
+- **Windrunner Spire — full boss rewrite** — Replaced fabricated mechanics with verified data. Key corrections: Kroluk's real RALLYING BELLOW + SHIELD WALL add phases at 66%/33% and BLADESTORM spread; Restless Heart's SQUALL LEAP DoT cleansed only via TURBULENT ARROWS puddles.
+- **Magister's Terrace — full boss rewrite** — Replaced inaccurate mechanics with verified data. Key corrections: Seranel's RUNIC MARKS one-at-a-time rule (simultaneous removal causes a wipe); Gemellus TRIPLICATE at 90% AND 50% with NEURAL LINK mechanic; Degentrius 4-zone UNSTABLE VOID ESSENCE coverage and tank NULL BOMB detonation.
+- **Preseason duplicates removed** — Preseason menu previously and incorrectly listed Windrunner Spire, Magister's Terrace, Maisara Caverns, and Nexus Point Xenas. These are Season 1 M+ dungeons. Preseason menu now correctly contains only the 4 non-M+ Midnight dungeons: Den of Nalorakk, Murder Row, The Blinding Vale, Voidscar Arena.
+
+### v1.0
+- Initial release with all 8 Season 1 M+ dungeons and 4 preseason dungeons
+- Role-specific guide sections (TL;DR / Tank / Healer / DPS) for every boss
+- Role filter setting to show only your role's content
+- Popup window and chat output modes
+- Customisable bar width, transparency, fonts, and colors
+- Draggable bar and popup window
+- Slash command support (`/tldr`)
