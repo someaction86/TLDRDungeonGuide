@@ -16,6 +16,19 @@ jobs:
         env:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get CurseForge game version ID
+        run: |
+          curl -s \
+            -H "X-Api-Token: ${{ secrets.CF_API_KEY }}" \
+            "https://wow.curseforge.com/api/game/versions" \
+            | python3 -c "
+import sys, json
+versions = json.load(sys.stdin)
+for v in versions:
+    if '12.0' in v.get('name','') or '12.0' in v.get('slug',''):
+        print(v)
+"
+
       - name: Upload to CurseForge
         run: |
           TAG=${GITHUB_REF#refs/tags/}
