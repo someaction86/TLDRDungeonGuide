@@ -16,27 +16,16 @@ jobs:
         env:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract changelog for this version
-        id: changelog
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          # Extract the section for this tag from README.md
-          # Grabs everything between "### vX.Y.Z" and the next "### " heading
-          CHANGELOG=$(awk "/^### ${TAG}$/{found=1; next} found && /^### /{exit} found{print}" README.md)
-          if [ -z "$CHANGELOG" ]; then
-            CHANGELOG="Release ${TAG}"
-          fi
-          # Escape for JSON
-          CHANGELOG=$(echo "$CHANGELOG" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip()))")
-          echo "content=${CHANGELOG}" >> $GITHUB_OUTPUT
-
       - name: Upload to CurseForge
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
         run: |
           TAG=${GITHUB_REF#refs/tags/}
           ZIP=".release/TLDRDungeonGuide-${TAG}.zip"
+          METADATA=$(printf '{"changelog":"%s","changelogType":"markdown","gameVersions":[14422,15855],"releaseType":"release"}' "$TAG")
           echo "Uploading $ZIP to CurseForge..."
           curl --fail -X POST \
-            -H "X-Api-Token: ${{ secrets.CF_API_KEY }}" \
-            -F "metadata={\"changelog\":${{ steps.changelog.outputs.content }},\"changelogType\":\"markdown\",\"gameVersions\":[14422,15855],\"releaseType\":\"release\"}" \
+            -H "X-Api-Token: ${CF_API_KEY}" \
+            -F "metadata=${METADATA}" \
             -F "file=@${ZIP}" \
             "https://wow.curseforge.com/api/projects/1477038/upload-file"
