@@ -1,5 +1,5 @@
 -- ============================================================
---  TLDRDungeonGuide.lua  v1.3.1
+--  TLDRDungeonGuide.lua  v1.4.1
 --  Midnight Season 1 – TL;DR Boss Guide with Role Breakdowns
 --  ALL 16 DUNGEONS COMPLETE
 -- ============================================================
