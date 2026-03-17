@@ -178,3 +178,4 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 - Role filter, popup window and chat output modes
 - Customisable bar width, transparency, fonts, and colors
 - Draggable bar and popup window, slash command support (`/tldr`)
+- 
