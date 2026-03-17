@@ -11,17 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug secrets
-        run: |
-          echo "CF_API_KEY length: ${#CF_API_KEY}"
-          echo "CF_API_KEY set: ${{ secrets.CF_API_KEY != '' }}"
-        env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-
-      - name: Package and release
+      - name: Package and release to GitHub
         uses: BigWigsMods/packager@v2
-        with:
-          curse-id: 1477038
         env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to CurseForge
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          ZIP=".release/TLDRDungeonGuide-${TAG}.zip"
+          echo "Uploading $ZIP to CurseForge..."
+          curl --fail -X POST \
+            -H "X-Api-Token: ${{ secrets.CF_API_KEY }}" \
+            -F "metadata={\"changelog\":\"${TAG}\",\"gameVersions\":[12319],\"releaseType\":\"release\"}" \
+            -F "file=@${ZIP}" \
+            "https://wow.curseforge.com/api/projects/1477038/upload-file"
