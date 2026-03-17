@@ -16,6 +16,20 @@ jobs:
         env:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          # Extract the section for this tag from README.md
+          # Grabs everything between "### vX.Y.Z" and the next "### " heading
+          CHANGELOG=$(awk "/^### ${TAG}$/{found=1; next} found && /^### /{exit} found{print}" README.md)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="Release ${TAG}"
+          fi
+          # Escape for JSON
+          CHANGELOG=$(echo "$CHANGELOG" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip()))")
+          echo "content=${CHANGELOG}" >> $GITHUB_OUTPUT
+
       - name: Upload to CurseForge
         run: |
           TAG=${GITHUB_REF#refs/tags/}
@@ -23,6 +37,6 @@ jobs:
           echo "Uploading $ZIP to CurseForge..."
           curl --fail -X POST \
             -H "X-Api-Token: ${{ secrets.CF_API_KEY }}" \
-            -F "metadata={\"changelog\":\"${TAG}\",\"gameVersions\":[14422,15855],\"releaseType\":\"release\"}" \
+            -F "metadata={\"changelog\":${{ steps.changelog.outputs.content }},\"changelogType\":\"markdown\",\"gameVersions\":[14422,15855],\"releaseType\":\"release\"}" \
             -F "file=@${ZIP}" \
             "https://wow.curseforge.com/api/projects/1477038/upload-file"
