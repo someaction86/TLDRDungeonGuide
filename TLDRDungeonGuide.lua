@@ -1188,12 +1188,14 @@ local ROLE_LABELS = {
 }
 
 local function TrimBrief(line)
-    -- In brief mode: keep only the part before the first " — " separator.
-    -- This turns "SURGE OF POWER: interrupt on cooldown — assign a rotation." into
-    -- "SURGE OF POWER: interrupt on cooldown."
-    local brief = line:match("^(.-)%s+%-%-%s+.+$")
+    -- Guide lines use " — " (em dash) as the separator between the key point and detail.
+    -- Match everything before the first em dash and return just that part.
+    local brief = line:match("^(.-)%s+\xe2\x80\x94%s+.+$")  -- UTF-8 em dash: U+2014
+    if not brief then
+        -- fallback: try " - " regular hyphen separator
+        brief = line:match("^(.-)%s+%-%s+.+$")
+    end
     if brief and #brief > 10 then
-        -- Add period if it doesn't already end with punctuation
         if not brief:match("[%.%!%?]$") then brief = brief.."." end
         return brief
     end
@@ -1297,20 +1299,22 @@ popupTitleTxt:SetText(COLOR.TITLE.."TL;DR Dungeon Guide"..COLOR.RESET)
 
 -- ── Boss nav arrows ──────────────────────────────────────────
 local navPrev = CreateFrame("Button",nil,popupTitleBar)
-navPrev:SetSize(22,22)
+navPrev:SetSize(20,20)
 navPrev:SetPoint("RIGHT",popupTitleBar,"RIGHT",-54,0)
-navPrev:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up")
-navPrev:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up","ADD")
-navPrev:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Down")
-navPrev:SetDisabledTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Disabled")
+navPrev:SetNormalTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Up")
+navPrev:SetHighlightTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Highlight","ADD")
+navPrev:SetPushedTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Down")
+navPrev:SetDisabledTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Disabled")
+navPrev:GetNormalTexture():SetRotation(math.pi * 1.5)  -- rotate to point left
 
 local navNext = CreateFrame("Button",nil,popupTitleBar)
-navNext:SetSize(22,22)
-navNext:SetPoint("RIGHT",popupTitleBar,"RIGHT",-32,0)
-navNext:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up")
-navNext:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up","ADD")
-navNext:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Down")
-navNext:SetDisabledTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Disabled")
+navNext:SetSize(20,20)
+navNext:SetPoint("RIGHT",popupTitleBar,"RIGHT",-30,0)
+navNext:SetNormalTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Up")
+navNext:SetHighlightTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Highlight","ADD")
+navNext:SetPushedTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Down")
+navNext:SetDisabledTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Disabled")
+navNext:GetNormalTexture():SetRotation(math.pi * 0.5)  -- rotate to point right
 
 -- UpdateNavArrows: enable/disable arrows and set tooltips based on current position
 UpdateNavArrows = function()
@@ -1438,12 +1442,11 @@ local function ShowBossInPopup(dungeon, boss, dungeonIdx, bossIdx, sourceTable)
     lastShownBossIndex    = bossIdx
     lastShownTable        = sourceTable or dungeons
     local lines = BuildBossLines(dungeon, boss)
-    ApplyFontSize()
     popupText:SetText(table.concat(lines,"\n"))
+    ApplyFontSize()  -- must be AFTER SetText or WoW resets the font
     popupContent:SetHeight(popupText:GetStringHeight()+16)
     popupWindow:Show()
     popupWindow:Raise()
-    -- Nav arrows updated after popupWindow exists (UpdateNavArrows defined after popup creation)
     if UpdateNavArrows then UpdateNavArrows() end
 end
 
@@ -2083,10 +2086,11 @@ HRule(-804)
 MakeTextColorRow("Info Text Color","infoColor", -812)
 HRule(-844)
 
--- ── BUTTONS ───────────────────────────────────────────────────
+-- ── BUTTONS ─────────────────────────────────────────────────
+-- Three buttons in a row: [Reset to Defaults] [Reset Position] [Done]
 local resetBtn = CreateFrame("Button",nil,optPanel,"UIPanelButtonTemplate")
 resetBtn:SetSize(130,26)
-resetBtn:SetPoint("BOTTOMLEFT",optPanel,"BOTTOMLEFT",16,14)
+resetBtn:SetPoint("BOTTOMLEFT",optPanel,"BOTTOMLEFT",10,14)
 resetBtn:SetText("Reset to Defaults")
 resetBtn:SetScript("OnClick", function()
     for k in pairs(defaults) do MPG_Settings[k] = nil end
@@ -2119,7 +2123,7 @@ end)
 -- Reset Position: snaps bar and popup back to safe on-screen positions and
 -- resets saved popup size — solves "popup went off-screen" situations.
 local resetPosBtn = CreateFrame("Button",nil,optPanel,"UIPanelButtonTemplate")
-resetPosBtn:SetSize(118,26)
+resetPosBtn:SetSize(100,26)
 resetPosBtn:SetPoint("BOTTOM",optPanel,"BOTTOM",0,14)
 resetPosBtn:SetText("Reset Position")
 resetPosBtn:SetScript("OnClick", function()
@@ -2141,7 +2145,7 @@ end)
 
 local doneBtn = CreateFrame("Button",nil,optPanel,"UIPanelButtonTemplate")
 doneBtn:SetSize(70,26)
-doneBtn:SetPoint("BOTTOMRIGHT",optPanel,"BOTTOMRIGHT",-16,14)
+doneBtn:SetPoint("BOTTOMRIGHT",optPanel,"BOTTOMRIGHT",-10,14)
 doneBtn:SetText("Done")
 doneBtn:SetScript("OnClick", function() optPanel:Hide() end)
 
