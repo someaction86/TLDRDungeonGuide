@@ -158,7 +158,7 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 
 ## Changelog
 
-### v1.3.1
+### v1.4.0
 - **Boss navigation arrows** — Prev/Next buttons in the popup title bar let you scroll through every boss without reopening the dropdown. Steps across dungeon boundaries. Hovering shows the upcoming boss and dungeon in a tooltip. Arrows disable at the start/end of each source table.
 - **SharedMedia font integration** — Font picker detects LibSharedMedia-3.0 at login and rebuilds with the full LSM list if found. The picker is now a scrollable frame. Without SharedMedia it falls back to the built-in four fonts. A status line confirms how many LSM fonts were detected.
 - **Guide Density toggle** — New option: Normal (full detail) or Brief (key points only). Brief mode strips everything after the first ` — ` separator in each bullet. Changes apply live to any open popup.
