@@ -23,6 +23,6 @@ jobs:
           echo "Uploading $ZIP to CurseForge..."
           curl --fail -X POST \
             -H "X-Api-Token: ${{ secrets.CF_API_KEY }}" \
-            -F "metadata={\"changelog\":\"${TAG}\",\"gameVersions\":[14422],\"releaseType\":\"release\"}" \
+            -F "metadata={\"changelog\":\"${TAG}\",\"gameVersions\":[14422,15855],\"releaseType\":\"release\"}" \
             -F "file=@${ZIP}" \
             "https://wow.curseforge.com/api/projects/1477038/upload-file"
