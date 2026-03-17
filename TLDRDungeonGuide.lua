@@ -1,5 +1,5 @@
 -- ============================================================
---  TLDRDungeonGuide.lua  v1.4.4
+--  TLDRDungeonGuide.lua  v1.5.0
 --  Midnight Season 1 – TL;DR Boss Guide with Role Breakdowns
 --  ALL 16 DUNGEONS COMPLETE
 -- ============================================================
@@ -1083,15 +1083,247 @@ local preseasonDungeons = {
         },
     },
 }
+
 -- ============================================================
---  COLOR UTILS
+--  RAID DATA
 -- ============================================================
+-- heroic = table of strings: what changes on Heroic difficulty.
+--          Shown in red in the popup. nil = not yet available.
+
+local raids = {
+    {
+        name = "The Voidspire",
+        available = true,
+        bosses = {
+            {
+                name = "Imperator Averzian",
+                tldr = {
+                    "VOID TIC-TAC-TOE: the arena is a 3x3 grid. Averzian claims squares — prevent him getting three in a row or the whole raid takes a lethal void beam.",
+                    "Each cycle you can only contest 2 of the 3 spawning Abyssal Voidshapers — decide which square to concede BEFORE the cycle starts.",
+                    "UMBRAL COLLAPSE: three players are marked and must soak their tiles to kill the Voidshapers. Assign rotations before the pull.",
+                    "Keep Averzian away from his claimed tiles — he gains a large damage buff and heavy damage reduction if he stands on them.",
+                },
+                tank = {
+                    "BLACKENING WOUNDS stacks reduce your max health — swap tanks at 8-10 stacks before they become lethal.",
+                    "Keep Averzian positioned away from claimed tiles at all times — losing positional control lets him gain damage buffs.",
+                    "When Averzian gains Void bonuses near claimed tiles, spike damage becomes unpredictable — communicate defensive timing early.",
+                },
+                healer = {
+                    "DARK UPHEAVAL deals steady raid-wide damage that intensifies as the arena fills with claimed tiles — scale cooldowns with the pace of tile loss.",
+                    "Umbral Collapse soaks spike incoming damage — pre-position throughput for each soak wave.",
+                    "Tanks spike unpredictably when Averzian gains Void bonuses — anticipate rather than react.",
+                },
+                dps = {
+                    "Assign two DPS to handle DARK TEARS add waves — kill Abyssal Voidshapers fast to control grid.",
+                    "Focus Voidshapers on your assigned soak tiles first, then swap back to boss during clean windows.",
+                    "Interrupt GATHERING DARKNESS on Voidshapers religiously — every missed interrupt accelerates tile loss.",
+                },
+                heroic = {
+                    "On Heroic, Averzian applies multiple simultaneous dispellable effects — dispelling without coordination causes overlapping raid-wide damage. Assign a structured dispel rotation rather than reactive cleanses.",
+                },
+            },
+            {
+                name = "Vorasius",
+                tldr = {
+                    "VOID BREATH: a lethal sweeping beam across the arena. Survive by breaking crystal walls BEFORE it fires — no walls = no safe zone = wipe.",
+                    "PARASITIC EXPULSION: adds fixate random players. Kite your add directly into a crystal wall and burst it there — the explosion breaks the wall.",
+                    "The side where Vorasius holds a glowing orb tells you which direction Void Breath will sweep from — position accordingly.",
+                    "PRIMORDIAL ROAR: pulls all players inward — run against the pull until the cast finishes or fall to your death.",
+                },
+                tank = {
+                    "SMASHING FRENZY is a frontal — stand in front of it intentionally. Missing the hit triggers a lethal raid-wide explosion.",
+                    "Swap on CRYSTALLINE ERUPTION debuff — heavy physical intake follows.",
+                    "Keep positioning consistent so the raid always knows which wall side is safe.",
+                },
+                healer = {
+                    "PRIMORDIAL ROAR deals escalating raid-wide damage throughout — rotate cooldowns and sustain throughput for the full fight duration.",
+                    "Pre-assign externals for the second wall cycle — healing spikes occur during wall patterns and forced movement.",
+                    "This is a throughput check fight — if the raid is undergeared, cooldowns will run dry before the fight ends.",
+                },
+                dps = {
+                    "Two designated kite specialists — keep Blistercreep adds alive long enough to position at the wall, then burst them.",
+                    "Vorasius is stationary — full uptime on boss between add phases. Use it.",
+                    "Call which wall you are taking your add to — coordination prevents two adds going to the same wall.",
+                },
+                heroic = {
+                    "On Heroic, each crystal wall requires TWO Blistercreep explosions to break instead of one. Assign add pairs to walls explicitly before the pull.",
+                },
+            },
+            {
+                name = "Fallen-King Salhadaar",
+                tldr = {
+                    "CONCENTRATED VOID ORBS spawn and drift toward Salhadaar — if either reaches him he casts RECKLESS INFUSION and wipes the raid. Hard swap and kill them immediately.",
+                    "Stagger orb kills by at least 8 seconds — simultaneous orb deaths stack GALACTIC MIASMA and overwhelm healers.",
+                    "SHATTERING TWILIGHT: Salhadaar stops moving — reposition him far from active portals before he casts so orbs can't catch him.",
+                    "100 energy ENTROPIC UNRAVELING: rotating beams phase — heavy movement but boss takes increased damage. Burn window.",
+                },
+                tank = {
+                    "Keep Salhadaar dragging slowly away from active portals — static positioning during SHATTERING TWILIGHT is when orbs catch him.",
+                    "Swap at 9-10 stacks of the tank debuff. Keep boss path clean for beam movement during 100-energy phase.",
+                    "Step clear of the raid during SHATTERING TWILIGHT so spike patterns don't block orb lanes.",
+                },
+                healer = {
+                    "GALACTIC MIASMA DoT from orb kills is your primary challenge — staggered kills give you breathing room between waves.",
+                    "Dispels can add a heal-absorb that must be healed through — assign a dispel order and call it explicitly.",
+                    "Rotate defensives and personals during the ENTROPIC UNRAVELING burn phase — it's high movement and high damage simultaneously.",
+                },
+                dps = {
+                    "Orbs are absolute priority — the moment they spawn, hard swap immediately. Boss damage is secondary.",
+                    "Kill orbs at least 8 seconds apart — call the countdown out loud.",
+                    "Use ENTROPIC UNRAVELING phase (100 energy) as the main burn window — the boss takes increased damage here.",
+                },
+                heroic = {
+                    "On Heroic, orb kills apply raid debuffs in addition to GALACTIC MIASMA — stagger kills further and rotate personal defensives when your debuff is active.",
+                },
+            },
+            {
+                name = "Vaelgor & Ezzorak",
+                tldr = {
+                    "Keep both dragons within 10% HP of each other at all times — if either gets too far ahead the other enrages and wipes the raid.",
+                    "GLOOM ORBS must be soaked — assign players to intercept them or they deal lethal splash damage.",
+                    "NULL BEAM tether: two tethered players must run apart to break the beam before it deals lethal damage.",
+                    "DREAD BREATH: marked player runs away from the group before the cone fires.",
+                },
+                tank = {
+                    "Tank swap on VEILWING/RACKFANG debuff stacks — typically at 3-4 stacks depending on gear level.",
+                    "Communicate HP percentages constantly — both dragons must stay within 10% or you lose the pull.",
+                    "Position dragons so DREAD BREATH cones don't overlap with GLOOM ORB soak positions.",
+                },
+                healer = {
+                    "GLOOM ORB soaks spike the assigned player hard — pre-heal soak targets before impact.",
+                    "During air phases both dragons gain increased damage — save a major cooldown for each air-to-ground transition.",
+                    "NULL BEAM damage ticks on both tethered players while active — top them fast after break.",
+                },
+                dps = {
+                    "Call HP percentages every 10 seconds — raid lead or a designated caller keeps the 10% window honest.",
+                    "Swap targets cleanly and quickly when one dragon pulls ahead — padding meters costs the pull.",
+                    "GLOOM ORB assignments are pre-assigned — know your rotation before the pull.",
+                },
+                heroic = {
+                    "On Heroic, additional GLOOM ORB soak windows are added between the standard rotations. Ensure soak assignments cover the extra spawns.",
+                },
+            },
+            {
+                name = "Lightblinded Vanguard",
+                tldr = {
+                    "Three-boss council fight — all three must die in close succession or survivors enrage and wipe the raid.",
+                    "SACRED SHIELD on any boss blocks all interrupts while active — burn the shield down immediately or casts will land.",
+                    "TYR'S WRATH: one boss gains a damage amp and healing reduction aura — the affected boss is the priority target while the buff is active.",
+                    "Tank swaps are frequent — communicate JUDGMENT into follow-up hit timing explicitly.",
+                },
+                tank = {
+                    "Respect JUDGMENT timing — the follow-up hit after Judgment is when tanks die if defensive is not ready.",
+                    "Keep all three bosses loosely stacked for group cleave but spread enough to avoid overlapping frontal cleaves.",
+                    "Coordinate tank swaps across both tanks for all three bosses — you are effectively tanking six mechanics simultaneously.",
+                },
+                healer = {
+                    "TYR'S WRATH reduces healing on the affected boss's tank — prioritize that tank aggressively when the buff is active.",
+                    "All three bosses reach full energy simultaneously and amplify each other — this is your major cooldown window.",
+                    "Sustained AoE damage throughout — no downtime. Cooldown rotation must be planned for the full fight duration.",
+                },
+                dps = {
+                    "Coordinate target swaps for SACRED SHIELD — the whole raid needs to swap immediately or a dangerous cast lands.",
+                    "Balance cleave on all three targets while following priority target callouts — tunneling one boss ends the pull.",
+                    "TYR'S WRATH buff target is the kill priority — call it out as soon as it applies.",
+                },
+                heroic = {
+                    "Not available yet — Heroic data will be updated as guilds progress.",
+                },
+            },
+            {
+                name = "Crown of the Cosmos (Xal'atath)",
+                tldr = {
+                    "PHASE 1: three Undying Sentinels spawn on pull — tank all three immediately to prevent ECHOING DARKNESS wipe.",
+                    "SILVERSTRIKE ARROW: must be aimed deliberately away from the raid — accidental cleaves apply healing reduction during overlap windows.",
+                    "FINAL PHASE: GRAVITY COLLAPSE and cosmic anomalies overlap — this is the hardest execution window in the raid. Major cooldowns here.",
+                },
+                tank = {
+                    "Establish threat on all three Undying Sentinels within the first seconds of the pull — losing one is fatal.",
+                    "During SILVERSTRIKE ARROW windows, maintain boss positioning while coordinating where arrows will land.",
+                    "GRAVITY COLLAPSE pulls the raid inward — position to counteract displacement while holding threat.",
+                },
+                healer = {
+                    "During SILVERSTRIKE ARROW: accidental cleaves cause healing reduction stacks that compound quickly — communicate arrow aim to avoid overlap.",
+                    "GRAVITY COLLAPSE final phase is your biggest cooldown window — save your largest raid cooldown for it.",
+                    "Pre-heal the raid before each GRAVITY COLLAPSE — the pull-in plus cosmic anomaly damage spikes everyone simultaneously.",
+                },
+                dps = {
+                    "Phase 1: divide sentinel kill assignments — all three must die before ECHOING DARKNESS fires.",
+                    "Know your SILVERSTRIKE ARROW aim point before the pull — improvising mid-pull causes the cleave chain that kills healers.",
+                    "Final phase: pop all remaining personals during GRAVITY COLLAPSE. This is the kill window.",
+                },
+                heroic = {
+                    "On Heroic, GRAVITY COLLAPSE overlaps with additional cosmic anomaly patterns in the final phase — the execution window is significantly tighter. Pre-assign player positions for the anomaly grid before the pull.",
+                },
+            },
+        },
+    },
+    {
+        name = "The Dreamrift",
+        available = true,
+        bosses = {
+            {
+                name = "Chimaerus",
+                tldr = {
+                    "Kill Manifestations BEFORE they reach Chimaerus — each one he consumes grants a permanent stacking damage buff that makes the fight unkillable.",
+                    "TWINNING: half the raid enters the Shadow Realm. Your Shadow Realm counterpart occupies the same map position — standing within 8 yards of them pulses lethal damage. Spread out.",
+                    "PHASE 2: CORRUPTED DEVASTATION air phase — raid spreads for RAVENOUS DIVE targeting. Watch for ALNDUST UPHEAVAL realm splits.",
+                },
+                tank = {
+                    "Chimaerus's melee in Phase 2 gains reach during the air phase — maintain positioning to avoid unintended hits on the raid.",
+                    "Shadow Realm counterpart positions mirror yours — communicate your positioning to your realm-split counterpart.",
+                    "When Manifestations spawn, temporarily ignore boss to help peel adds toward the edges before they path to Chimaerus.",
+                },
+                healer = {
+                    "Each Manifestation Chimaerus consumes permanently increases his damage — if two land the fight becomes a healer check. Three is usually unrecoverable.",
+                    "RAVENOUS DIVE in Phase 2 targets random players — spot-heal targets before impact.",
+                    "Shadow Realm players take passive damage — maintain both realm groups simultaneously.",
+                },
+                dps = {
+                    "Manifestations are the absolute kill priority — drop everything and kill them the instant they spawn.",
+                    "TWINNING: know your Shadow Realm entry point and spread immediately on arrival — clumping wipes your half of the raid.",
+                    "Phase 2 burn window: Chimaerus is in the air but targetable — use mobility and ranged to maintain uptime.",
+                },
+                heroic = {
+                    "Not available yet — Heroic data will be updated as guilds progress.",
+                },
+            },
+        },
+    },
+    {
+        name = "March on Quel'Danas",
+        available = false,
+        bosses = {
+            {
+                name = "Belo'ren",
+                tldr = {
+                    "Not available yet — March on Quel'Danas opens March 31, 2026.",
+                },
+                tank = { "Not available yet." },
+                healer = { "Not available yet." },
+                dps = { "Not available yet." },
+                heroic = nil,
+            },
+            {
+                name = "Midnight Falls (L'ura)",
+                tldr = {
+                    "Not available yet — March on Quel'Danas opens March 31, 2026.",
+                },
+                tank = { "Not available yet." },
+                healer = { "Not available yet." },
+                dps = { "Not available yet." },
+                heroic = nil,
+            },
+        },
+    },
+}
 
 local COLOR = {
     TITLE  = "|cFFFFD700",
     DUNGEON= "|cFF00CFFF",
     BOSS   = "|cFFFF8C00",
     WARN   = "|cFFFF4444",
+    HEROIC = "|cFFFF3333",
     RESET  = "|r",
 }
 local ADDON_NAME = "TL;DR Dungeon Guide"
@@ -1239,6 +1471,16 @@ local function BuildBossLines(dungeon, boss)
                 local l = brief and TrimBrief(line) or line
                 table.insert(lines, FormatTldrLine(i, l))
             end
+        end
+    end
+
+    -- Heroic differences (shown in red, always visible regardless of role filter)
+    if boss.heroic and #boss.heroic > 0 then
+        table.insert(lines, "")
+        table.insert(lines, COLOR.HEROIC..">> HEROIC DIFFERENCES"..COLOR.RESET)
+        for i, line in ipairs(boss.heroic) do
+            local l = brief and TrimBrief(line) or line
+            table.insert(lines, COLOR.HEROIC..i..". "..l..COLOR.RESET)
         end
     end
 
@@ -1485,7 +1727,7 @@ end
 -- ============================================================
 
 local frame = CreateFrame("Frame","MPGFrame",UIParent,"BackdropTemplate")
-frame:SetSize(GetSetting("barWidth"), 36)
+frame:SetSize(GetSetting("barWidth"), 58)  -- taller to fit two rows
 frame:SetPoint("CENTER",UIParent,"CENTER",0,300)
 frame:SetMovable(true)
 frame:SetClampedToScreen(true)
@@ -1502,6 +1744,7 @@ local function ApplyBarAppearance()
     frame:SetBackdrop(backdrop)
     frame:SetBackdropColor(bg.r, bg.g, bg.b, alpha)
     frame:SetWidth(GetSetting("barWidth"))
+    -- height stays at 58 always
     -- Popup window (only if it exists yet)
     if popupWindow then
         popupWindow:SetBackdrop(backdrop)
@@ -1516,16 +1759,27 @@ local function ApplyBarAppearance()
     end
 end
 
--- Draggable title button (left side, leaves room for gear icon)
-local titleBtn = CreateFrame("Button",nil,frame)
-titleBtn:SetPoint("TOPLEFT",    frame,"TOPLEFT",  0, 0)
-titleBtn:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-30, 0)
-titleBtn:RegisterForDrag("LeftButton")
+-- Forward declare menu openers so buttons can reference them before definition
+local OpenDungeonMenu, OpenRaidMenu
 
+-- Make the frame itself draggable - no separate drag handle needed
+frame:EnableMouse(true)
+frame:RegisterForDrag("LeftButton")
+
+local isDragging = false
+frame:SetScript("OnDragStart", function(self)
+    isDragging = true
+    self:StartMoving()
+end)
+frame:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    C_Timer.After(0.05, function() isDragging = false end)
+end)
+
+-- Title label (top row, left)
 local titleText = frame:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-titleText:SetPoint("LEFT", titleBtn,"LEFT", 6, 0)
-titleText:SetPoint("RIGHT",titleBtn,"RIGHT",-6, 0)
-titleText:SetJustifyH("CENTER")
+titleText:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
+titleText:SetJustifyH("LEFT")
 titleText:SetWordWrap(false)
 titleText:SetNonSpaceWrap(false)
 
@@ -1533,28 +1787,10 @@ local function RefreshTitleText()
     titleText:SetText(TitleColorCode().."TL;DR Dungeon Guide"..COLOR.RESET)
 end
 
-local isDragging = false
-titleBtn:SetScript("OnDragStart", function()
-    isDragging = true
-    frame:StartMoving()
-end)
-titleBtn:SetScript("OnDragStop", function()
-    frame:StopMovingOrSizing()
-    C_Timer.After(0.05, function() isDragging = false end)
-end)
-titleBtn:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
-    GameTooltip:SetText("TL;DR Dungeon Guide",1,0.84,0)
-    GameTooltip:AddLine("Left-click: Season 1 Dungeons",0.8,0.8,0.8)
-    GameTooltip:AddLine("Right-click: Preseason Dungeons",0.8,0.8,0.8)
-    GameTooltip:Show()
-end)
-titleBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
--- Gear / options button (right side of bar)
+-- Gear / options button (top row, right)
 local optionsBtn = CreateFrame("Button",nil,frame)
 optionsBtn:SetSize(18,18)
-optionsBtn:SetPoint("RIGHT",frame,"RIGHT",-3,0)
+optionsBtn:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-3,-3)
 optionsBtn:SetNormalTexture("Interface/Buttons/UI-OptionsButton")
 optionsBtn:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square","ADD")
 optionsBtn:SetScript("OnEnter", function(self)
@@ -1563,6 +1799,63 @@ optionsBtn:SetScript("OnEnter", function(self)
     GameTooltip:Show()
 end)
 optionsBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+-- Separator line between title row and button row
+local barSep = frame:CreateTexture(nil,"ARTWORK")
+barSep:SetHeight(1)
+barSep:SetPoint("TOPLEFT",  frame,"TOPLEFT",  4, -22)
+barSep:SetPoint("TOPRIGHT", frame,"TOPRIGHT", -4, -22)
+barSep:SetColorTexture(0.4,0.4,0.4,0.5)
+
+-- Dungeons button (bottom row, left) — styled as plain clickable text to match bar aesthetic
+local dungeonBtn = CreateFrame("Button",nil,frame)
+dungeonBtn:SetSize(100,24)
+dungeonBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 4, 4)
+dungeonBtn:EnableMouse(true)
+local dungeonTxt = dungeonBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+dungeonTxt:SetAllPoints()
+dungeonTxt:SetJustifyH("CENTER")
+dungeonTxt:SetText("|cFF00CFFF[ Dungeons ]|r")
+dungeonBtn:SetScript("OnClick", function()
+    if isDragging then return end
+    OpenDungeonMenu()
+end)
+dungeonBtn:SetScript("OnEnter", function(self)
+    dungeonTxt:SetText("|cFFFFFFFF[ Dungeons ]|r")
+    GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
+    GameTooltip:SetText("Dungeons",1,0.84,0)
+    GameTooltip:AddLine("Season 1 and Preseason dungeon guides",0.8,0.8,0.8)
+    GameTooltip:Show()
+end)
+dungeonBtn:SetScript("OnLeave", function()
+    dungeonTxt:SetText("|cFF00CFFF[ Dungeons ]|r")
+    GameTooltip:Hide()
+end)
+
+-- Raids button (bottom row, right of Dungeons)
+local raidBtn = CreateFrame("Button",nil,frame)
+raidBtn:SetSize(80,24)
+raidBtn:SetPoint("BOTTOMLEFT", dungeonBtn, "BOTTOMRIGHT", 6, 0)
+raidBtn:EnableMouse(true)
+local raidTxt = raidBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+raidTxt:SetAllPoints()
+raidTxt:SetJustifyH("CENTER")
+raidTxt:SetText("|cFF00CFFF[ Raids ]|r")
+raidBtn:SetScript("OnClick", function()
+    if isDragging then return end
+    OpenRaidMenu()
+end)
+raidBtn:SetScript("OnEnter", function(self)
+    raidTxt:SetText("|cFFFFFFFF[ Raids ]|r")
+    GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
+    GameTooltip:SetText("Raids",1,0.84,0)
+    GameTooltip:AddLine("Season 1 raid boss guides",0.8,0.8,0.8)
+    GameTooltip:Show()
+end)
+raidBtn:SetScript("OnLeave", function()
+    raidTxt:SetText("|cFF00CFFF[ Raids ]|r")
+    GameTooltip:Hide()
+end)
 
 -- ============================================================
 --  OPTIONS PANEL
@@ -2161,7 +2454,7 @@ end)
 -- ============================================================
 
 local dungeonMenu = CreateFrame("Frame","MPGDungeonMenu",UIParent,"UIDropDownMenuTemplate")
-local preseasonMenu = CreateFrame("Frame","MPGPreseasonMenu",UIParent,"UIDropDownMenuTemplate")
+local raidMenu    = CreateFrame("Frame","MPGRaidMenu",UIParent,"UIDropDownMenuTemplate")
 
 local function BuildBossSubmenu(sourceTable, isPreseason, level, menuList)
     local dungeon = sourceTable[menuList]
@@ -2172,9 +2465,6 @@ local function BuildBossSubmenu(sourceTable, isPreseason, level, menuList)
     for bi, boss in ipairs(dungeon.bosses) do
         local info = UIDropDownMenu_CreateInfo()
         info.text=boss.name; info.notCheckable=true
-        -- Pack dungeonIdx, bossIdx, and which table into arg1/arg2
-        -- arg1 = dungeonIdx * 100 + bossIdx (max 99 bosses per dungeon, safe)
-        -- arg2 = 1 if preseason, 0 if season1
         info.arg1 = menuList * 100 + bi
         info.arg2 = isPreseason and 1 or 0
         info.func = function(_, packed, tableFlag)
@@ -2188,13 +2478,13 @@ local function BuildBossSubmenu(sourceTable, isPreseason, level, menuList)
     end
 end
 
-local function OpenDungeonMenu()
+OpenDungeonMenu = function()
     UIDropDownMenu_Initialize(dungeonMenu, function(self, level, menuList)
         if level == 1 then
-            local hdr = UIDropDownMenu_CreateInfo()
-            hdr.text="Season 1 Dungeons"; hdr.isTitle=true; hdr.notCheckable=true
-            UIDropDownMenu_AddButton(hdr,level)
-
+            -- Season 1 header
+            local hdr1 = UIDropDownMenu_CreateInfo()
+            hdr1.text="Season 1 Dungeons"; hdr1.isTitle=true; hdr1.notCheckable=true
+            UIDropDownMenu_AddButton(hdr1,level)
             for di, dungeon in ipairs(dungeons) do
                 local info = UIDropDownMenu_CreateInfo()
                 info.text=dungeon.name; info.notCheckable=true
@@ -2202,9 +2492,24 @@ local function OpenDungeonMenu()
                 UIDropDownMenu_AddButton(info,level)
             end
 
-            local sep = UIDropDownMenu_CreateInfo()
-            sep.text=""; sep.disabled=true; sep.notCheckable=true
-            UIDropDownMenu_AddButton(sep,level)
+            local sep1 = UIDropDownMenu_CreateInfo()
+            sep1.text=""; sep1.disabled=true; sep1.notCheckable=true
+            UIDropDownMenu_AddButton(sep1,level)
+
+            -- Preseason header
+            local hdr2 = UIDropDownMenu_CreateInfo()
+            hdr2.text="Preseason Dungeons"; hdr2.isTitle=true; hdr2.notCheckable=true
+            UIDropDownMenu_AddButton(hdr2,level)
+            for di, dungeon in ipairs(preseasonDungeons) do
+                local info = UIDropDownMenu_CreateInfo()
+                info.text=dungeon.name; info.notCheckable=true
+                info.hasArrow=true; info.menuList=100+di  -- offset to distinguish from season1
+                UIDropDownMenu_AddButton(info,level)
+            end
+
+            local sep2 = UIDropDownMenu_CreateInfo()
+            sep2.text=""; sep2.disabled=true; sep2.notCheckable=true
+            UIDropDownMenu_AddButton(sep2,level)
 
             local opts = UIDropDownMenu_CreateInfo()
             opts.text="[Options]"; opts.notCheckable=true
@@ -2221,23 +2526,33 @@ local function OpenDungeonMenu()
             UIDropDownMenu_AddButton(close,level)
 
         elseif level == 2 then
-            BuildBossSubmenu(dungeons, false, level, menuList)
+            if menuList >= 100 then
+                BuildBossSubmenu(preseasonDungeons, true, level, menuList-100)
+            else
+                BuildBossSubmenu(dungeons, false, level, menuList)
+            end
         end
     end, "MENU")
-    ToggleDropDownMenu(1,nil,dungeonMenu,frame,0,-4)
+    ToggleDropDownMenu(1,nil,dungeonMenu,dungeonBtn,0,-4)
 end
 
-local function OpenPreseasonMenu()
-    UIDropDownMenu_Initialize(preseasonMenu, function(self, level, menuList)
+OpenRaidMenu = function()
+    UIDropDownMenu_Initialize(raidMenu, function(self, level, menuList)
         if level == 1 then
             local hdr = UIDropDownMenu_CreateInfo()
-            hdr.text="Preseason Dungeons"; hdr.isTitle=true; hdr.notCheckable=true
+            hdr.text="Season 1 Raids"; hdr.isTitle=true; hdr.notCheckable=true
             UIDropDownMenu_AddButton(hdr,level)
 
-            for di, dungeon in ipairs(preseasonDungeons) do
+            for ri, raid in ipairs(raids) do
                 local info = UIDropDownMenu_CreateInfo()
-                info.text=dungeon.name; info.notCheckable=true
-                info.hasArrow=true; info.menuList=di
+                if raid.available then
+                    info.text = raid.name
+                else
+                    info.text = raid.name.." |cFF888888(Mar 31)|r"
+                end
+                info.notCheckable=true
+                info.hasArrow=true
+                info.menuList=ri
                 UIDropDownMenu_AddButton(info,level)
             end
 
@@ -2251,21 +2566,31 @@ local function OpenPreseasonMenu()
             UIDropDownMenu_AddButton(close,level)
 
         elseif level == 2 then
-            BuildBossSubmenu(preseasonDungeons, true, level, menuList)
+            local raid = raids[menuList]
+            if not raid then return end
+            local hdr = UIDropDownMenu_CreateInfo()
+            hdr.text=raid.name.." Bosses"; hdr.isTitle=true; hdr.notCheckable=true
+            UIDropDownMenu_AddButton(hdr,level)
+            for bi, boss in ipairs(raid.bosses) do
+                local info = UIDropDownMenu_CreateInfo()
+                info.text = boss.name
+                info.notCheckable = true
+                -- tableFlag=2 means raids table, pack raidIdx*100+bossIdx
+                info.arg1 = menuList * 100 + bi
+                info.arg2 = 2
+                info.func = function(_, packed, tableFlag)
+                    CloseDropDownMenus()
+                    local ri = math.floor(packed / 100)
+                    local bossIdx = packed % 100
+                    local src = raids
+                    ShowBossGuide(src[ri], src[ri].bosses[bossIdx], ri, bossIdx, src)
+                end
+                UIDropDownMenu_AddButton(info,level)
+            end
         end
     end, "MENU")
-    ToggleDropDownMenu(1,nil,preseasonMenu,frame,0,-4)
+    ToggleDropDownMenu(1,nil,raidMenu,raidBtn,0,-4)
 end
-
-titleBtn:RegisterForClicks("LeftButtonUp","RightButtonUp")
-titleBtn:SetScript("OnClick", function(self, btn)
-    if isDragging then return end
-    if btn == "RightButton" then
-        OpenPreseasonMenu()
-    else
-        OpenDungeonMenu()
-    end
-end)
 
 -- ============================================================
 --  SLASH COMMANDS
@@ -2307,6 +2632,6 @@ initFrame:SetScript("OnEvent", function(self, event)
         end
         BuildFontButtons()  -- rebuild with correct Expressway state
         print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET
-              .." Midnight S1 loaded!  Click the bar to browse  |  Gear icon for options  |  /tldr")
+              .." Midnight S1 loaded!  Dungeons & Raids buttons on the bar  |  Gear icon for options  |  /tldr")
     end
 end)
