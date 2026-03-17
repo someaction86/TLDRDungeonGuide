@@ -9,10 +9,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Debug secrets
+        run: |
+          echo "CF_API_KEY length: ${#CF_API_KEY}"
+          echo "CF_API_KEY set: ${{ secrets.CF_API_KEY != '' }}"
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
 
       - name: Package and release
         uses: BigWigsMods/packager@v2
+        with:
+          curse-id: 1477038
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
