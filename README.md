@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.4.1 — WoW: Midnight Season 1**
+**Version 1.4.3 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -157,6 +157,14 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 ---
 
 ## Changelog
+
+### v1.4.3
+- **Fixed font picker** — Fonts now apply and persist correctly. Root cause was WoW resetting a FontString's font on every `SetText` call. Fixed by using a persistent named `Font` object (`CreateFont`) assigned via `SetFontObject`, which survives text updates.
+- **Fixed Expressway detection** — Moved to `PLAYER_LOGIN` so all addons are fully loaded before probing. Now checks three sources in order: LibSharedMedia registry, ElvUI's internal font table (`ElvUI[1].Media.Fonts.Expressway`), then a list of known file paths. Correct ElvUI path added (`ElvUI/Game/Shared/Media/Fonts/Expressway.ttf`). Backslash normalisation added since ElvUI stores paths with backslashes. Hover tooltip on the not-found button now explains how to install Expressway.
+- **Fixed Brief mode** — Lua 5.1 (WoW's version) does not support `\x` hex escape sequences — they were being treated as literal characters so the em dash pattern never matched. Fixed using decimal escapes (`\226\128\148`) which Lua 5.1 does support.
+- **Fixed boss navigation arrows** — Unicode arrow characters (`◄` `►`) have no glyphs in WoW's default fonts and rendered as `[]`. Replaced with plain ASCII `<` `>`. Also fixed a dropdown closure bug where the source table reference was being lost — indexes are now packed as pure integers in `arg1`/`arg2` with no closure dependency. Navigation now stops at the first and last boss of the current dungeon. Tooltip Unicode arrows replaced with plain text to avoid `[]` rendering.
+- **Fixed button overlap in Options panel** — Reset Position button re-anchored so it sits cleanly between Reset to Defaults and Done without overlapping.
+- **Reverted font picker** — Removed SharedMedia scroll frame complexity and returned to the original simple flat button list. Expressway auto-detection retained.
 
 ### v1.4.1
 - **Fixed font picker** — Fonts now apply correctly. Root cause was `ApplyFontSize()` being called before `SetText()` — WoW resets the font when text is set, overwriting the selection. Order corrected.
