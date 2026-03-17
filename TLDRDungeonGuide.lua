@@ -1,5 +1,5 @@
 -- ============================================================
---  TLDRDungeonGuide.lua  v1.4.1
+--  TLDRDungeonGuide.lua  v1.4.3
 --  Midnight Season 1 – TL;DR Boss Guide with Role Breakdowns
 --  ALL 16 DUNGEONS COMPLETE
 -- ============================================================
@@ -1127,6 +1127,7 @@ local lastShownDungeonIndex = nil  -- index into whichever table
 local lastShownBossIndex    = nil
 local lastShownTable        = nil  -- reference to dungeons or preseasonDungeons
 local popupWindow, popupText, popupContent, popupTitleBar  -- forward declared; created below
+local ShowBossInPopup  -- forward declared; defined after popup window creation
 
 -- ============================================================
 --  SHAREDMEDIA FONT DETECTION
@@ -1188,15 +1189,12 @@ local ROLE_LABELS = {
 }
 
 local function TrimBrief(line)
-    -- Guide lines use " — " (em dash) as the separator between the key point and detail.
-    -- Match everything before the first em dash and return just that part.
-    local brief = line:match("^(.-)%s+\xe2\x80\x94%s+.+$")  -- UTF-8 em dash: U+2014
-    if not brief then
-        -- fallback: try " - " regular hyphen separator
-        brief = line:match("^(.-)%s+%-%s+.+$")
-    end
+    -- Guide lines use " — " (em dash, U+2014) as the separator.
+    -- Use decimal escapes \226\128\148 since WoW runs Lua 5.1 which has no \x hex escapes.
+    local emdash = "\226\128\148"
+    local brief = line:match("^(.-) " .. emdash .. " .+$")
     if brief and #brief > 10 then
-        if not brief:match("[%.%!%?]$") then brief = brief.."." end
+        if not brief:match("[%.%!%?]$") then brief = brief .. "." end
         return brief
     end
     return line
@@ -1298,23 +1296,17 @@ popupTitleTxt:SetWordWrap(false)
 popupTitleTxt:SetText(COLOR.TITLE.."TL;DR Dungeon Guide"..COLOR.RESET)
 
 -- ── Boss nav arrows ──────────────────────────────────────────
-local navPrev = CreateFrame("Button",nil,popupTitleBar)
-navPrev:SetSize(20,20)
-navPrev:SetPoint("RIGHT",popupTitleBar,"RIGHT",-54,0)
-navPrev:SetNormalTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Up")
-navPrev:SetHighlightTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Highlight","ADD")
-navPrev:SetPushedTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Down")
-navPrev:SetDisabledTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Disabled")
-navPrev:GetNormalTexture():SetRotation(math.pi * 1.5)  -- rotate to point left
+local navPrev = CreateFrame("Button",nil,popupTitleBar,"UIPanelButtonTemplate")
+navPrev:SetSize(28,18)
+navPrev:SetPoint("RIGHT",popupTitleBar,"RIGHT",-56,0)
+navPrev:SetText("< ")
+navPrev:GetFontString():SetTextColor(1,0.84,0)
 
-local navNext = CreateFrame("Button",nil,popupTitleBar)
-navNext:SetSize(20,20)
-navNext:SetPoint("RIGHT",popupTitleBar,"RIGHT",-30,0)
-navNext:SetNormalTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Up")
-navNext:SetHighlightTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Highlight","ADD")
-navNext:SetPushedTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Down")
-navNext:SetDisabledTexture("Interface/Buttons/UI-Panel-ScrollUpButton-Disabled")
-navNext:GetNormalTexture():SetRotation(math.pi * 0.5)  -- rotate to point right
+local navNext = CreateFrame("Button",nil,popupTitleBar,"UIPanelButtonTemplate")
+navNext:SetSize(28,18)
+navNext:SetPoint("RIGHT",popupTitleBar,"RIGHT",-26,0)
+navNext:SetText(" >")
+navNext:GetFontString():SetTextColor(1,0.84,0)
 
 -- UpdateNavArrows: enable/disable arrows and set tooltips based on current position
 UpdateNavArrows = function()
@@ -1325,34 +1317,24 @@ UpdateNavArrows = function()
     local di, bi = lastShownDungeonIndex, lastShownBossIndex
     local dungeon = t[di]
 
-    -- Prev: go to previous boss, or last boss of previous dungeon
-    local hasPrev = (bi > 1) or (di > 1)
+    -- Prev/Next only within the current dungeon
+    local hasPrev = (bi > 1)
+    local hasNext = (bi < #dungeon.bosses)
     if hasPrev then navPrev:Enable() else navPrev:Disable() end
-
-    -- Next: go to next boss, or first boss of next dungeon
-    local hasNext = (bi < #dungeon.bosses) or (di < #t)
     if hasNext then navNext:Enable() else navNext:Disable() end
 
     -- Tooltips
     navPrev:SetScript("OnEnter", function(self)
-        local pd, pb
-        if bi > 1 then pd, pb = di, bi-1
-        elseif di > 1 then pd = di-1; pb = #t[pd].bosses end
-        if pd then
+        if bi > 1 then
             GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
-            GameTooltip:SetText("← "..t[pd].bosses[pb].name,1,1,1)
-            GameTooltip:AddLine(t[pd].name,0.7,0.7,0.7)
+            GameTooltip:SetText("Prev: "..dungeon.bosses[bi-1].name,1,1,1)
             GameTooltip:Show()
         end
     end)
     navNext:SetScript("OnEnter", function(self)
-        local nd, nb
-        if bi < #dungeon.bosses then nd, nb = di, bi+1
-        elseif di < #t then nd = di+1; nb = 1 end
-        if nd then
+        if bi < #dungeon.bosses then
             GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
-            GameTooltip:SetText("→ "..t[nd].bosses[nb].name,1,1,1)
-            GameTooltip:AddLine(t[nd].name,0.7,0.7,0.7)
+            GameTooltip:SetText("Next: "..dungeon.bosses[bi+1].name,1,1,1)
             GameTooltip:Show()
         end
     end)
@@ -1364,20 +1346,18 @@ navNext:SetScript("OnLeave", function() GameTooltip:Hide() end)
 navPrev:SetScript("OnClick", function()
     if not lastShownTable or not lastShownDungeonIndex or not lastShownBossIndex then return end
     local t, di, bi = lastShownTable, lastShownDungeonIndex, lastShownBossIndex
-    local nd, nb
-    if bi > 1 then nd, nb = di, bi-1
-    elseif di > 1 then nd = di-1; nb = #t[nd].bosses end
-    if nd then ShowBossInPopup(t[nd], t[nd].bosses[nb], nd, nb, t) end
+    if bi > 1 then
+        ShowBossInPopup(t[di], t[di].bosses[bi-1], di, bi-1, t)
+    end
 end)
 
 navNext:SetScript("OnClick", function()
     if not lastShownTable or not lastShownDungeonIndex or not lastShownBossIndex then return end
     local t, di, bi = lastShownTable, lastShownDungeonIndex, lastShownBossIndex
     local dungeon = t[di]
-    local nd, nb
-    if bi < #dungeon.bosses then nd, nb = di, bi+1
-    elseif di < #t then nd = di+1; nb = 1 end
-    if nd then ShowBossInPopup(t[nd], t[nd].bosses[nb], nd, nb, t) end
+    if bi < #dungeon.bosses then
+        ShowBossInPopup(t[di], t[di].bosses[bi+1], di, bi+1, t)
+    end
 end)
 
 navPrev:Disable()
@@ -1404,6 +1384,7 @@ popupText:SetWidth(popupScroll:GetWidth()-10)
 popupText:SetJustifyH("LEFT")
 popupText:SetJustifyV("TOP")
 popupText:SetSpacing(4)
+popupText:SetFontObject(popupFontObj)
 
 -- Resize grip
 local resizeGrip = CreateFrame("Button",nil,popupWindow)
@@ -1425,17 +1406,25 @@ end)
 --  APPLY FONT SIZE
 -- ============================================================
 
+-- Create a named Font object. Updating this object updates every
+-- FontString that uses it, regardless of SetText order.
+local popupFontObj = CreateFont("MPGPopupFont")
+popupFontObj:SetFont("Fonts/FRIZQT__.TTF", 12, "")
+
 local function ApplyFontSize()
     local size = GetSetting("fontSize")
     local face = GetSetting("fontFace")
-    popupText:SetFont(face or "Fonts/FRIZQT__.TTF", size, "")
+    popupFontObj:SetFont(face or "Fonts/FRIZQT__.TTF", size, "")
+    if popupText then
+        popupText:SetFontObject(popupFontObj)
+    end
 end
 
 -- ============================================================
 --  OUTPUT: CHAT OR POPUP
 -- ============================================================
 
-local function ShowBossInPopup(dungeon, boss, dungeonIdx, bossIdx, sourceTable)
+ShowBossInPopup = function(dungeon, boss, dungeonIdx, bossIdx, sourceTable)
     lastShownDungeon      = dungeon
     lastShownBoss         = boss
     lastShownDungeonIndex = dungeonIdx
@@ -1900,15 +1889,51 @@ HRule(-556)
 -- ── FONT PICKER ───────────────────────────────────────────────
 SectionLabel(-564, "Popup Font")
 
--- Probe common addon locations for Expressway.ttf.
+-- Probe common addon locations for Expressway.ttf
 local function FindExpresswayFont()
+    -- First: ask LibSharedMedia directly — most reliable since it knows exact paths
+    local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+    if LSM then
+        -- Try common name variations registered in LSM
+        local names = { "Expressway", "expressway", "Expressway MonoNum" }
+        for _, n in ipairs(names) do
+            local path = LSM:Fetch("font", n)
+            if path then return path end
+        end
+        -- Scan all LSM fonts for anything with "expressway" in the name
+        local list = LSM:List("font")
+        if list then
+            for _, name in ipairs(list) do
+                if name:lower():find("expressway") then
+                    local path = LSM:Fetch("font", name)
+                    if path then return path end
+                end
+            end
+        end
+    end
+    -- Second: check ElvUI's internal font table directly
+    if ElvUI and ElvUI[1] and ElvUI[1].Media and ElvUI[1].Media.Fonts then
+        local elvFonts = ElvUI[1].Media.Fonts
+        if elvFonts.Expressway then
+            -- ElvUI uses backslashes, normalise to forward slashes
+            return elvFonts.Expressway:gsub("\\", "/")
+        end
+    end
+
+    -- Fallback: probe known file locations directly
     local candidates = {
         "Interface/AddOns/TLDRDungeonGuide/Fonts/Expressway.ttf",
+        "Interface/AddOns/ElvUI/Game/Shared/Media/Fonts/Expressway.ttf",
         "Interface/AddOns/ElvUI/Core/Media/Fonts/Expressway.ttf",
         "Interface/AddOns/ElvUI_MerathilisUI/Core/Media/Fonts/Expressway.ttf",
+        "Interface/AddOns/ElvUI_BenikUI/Media/Fonts/Expressway.ttf",
         "Interface/AddOns/SharedMedia/fonts/Expressway.ttf",
+        "Interface/AddOns/SharedMedia/Fonts/Expressway.ttf",
         "Interface/AddOns/LSMedia/Fonts/Expressway.ttf",
         "Interface/AddOns/Details/Fonts/Expressway.ttf",
+        "Interface/AddOns/Tukui/Media/Fonts/Expressway.ttf",
+        "Interface/AddOns/ShestakUI/Media/Fonts/Expressway.ttf",
+        "Interface/AddOns/KkthnxUI/Media/Fonts/Expressway.ttf",
     }
     local tester = UIParent:CreateFontString(nil, "ARTWORK")
     for _, path in ipairs(candidates) do
@@ -1923,24 +1948,14 @@ local function FindExpresswayFont()
     return nil
 end
 
-local expresswayPath = FindExpresswayFont()
+local expresswayPath = nil  -- resolved at PLAYER_LOGIN once all addons are loaded
 
--- Built-in fallback font list (always available)
-local builtinFonts = {
+local fontOptions = {
     { name="Friz Quadrata (Default)", file="Fonts/FRIZQT__.TTF", available=true },
     { name="Arial Narrow",            file="Fonts/ARIALN.TTF",   available=true },
     { name="Nimrod MT",               file="Fonts/NIM_____.ttf", available=true },
-    { name="Expressway",              file=expresswayPath or "",  available=expresswayPath~=nil },
+    { name="Expressway",              file="",                    available=false },  -- updated at login
 }
-
--- Font scroll container — fixed 120px tall, scrollable when LSM provides many fonts
-local fontScrollFrame = CreateFrame("ScrollFrame", "MPGFontScroll", optPanel, "UIPanelScrollFrameTemplate")
-fontScrollFrame:SetSize(290, 120)
-fontScrollFrame:SetPoint("TOPLEFT", optPanel, "TOPLEFT", 14, -580)
-
-local fontScrollChild = CreateFrame("Frame", nil, fontScrollFrame)
-fontScrollChild:SetSize(270, 1)  -- height set dynamically
-fontScrollFrame:SetScrollChild(fontScrollChild)
 
 local fontBtns = {}
 
@@ -1956,80 +1971,57 @@ local function RefreshFontButtons()
 end
 
 local function BuildFontButtons()
-    -- Clear existing buttons
-    for _, fb in ipairs(fontBtns) do fb.btn:Hide() end
-    fontBtns = {}
-
-    -- Decide which list to show: LSM if available, built-ins otherwise
-    local list = sharedMediaFonts or builtinFonts
-    local lsmActive = sharedMediaFonts ~= nil
-
-    local rowH = 22
-    fontScrollChild:SetHeight(math.max(#list * rowH, 1))
-
-    for i, fo in ipairs(list) do
-        local available = (fo.available ~= false)  -- LSM fonts are always available
-        local btn = CreateFrame("Button", nil, fontScrollChild, "BackdropTemplate")
-        btn:SetSize(270, rowH - 2)
-        btn:SetPoint("TOPLEFT", fontScrollChild, "TOPLEFT", 0, -(i-1)*rowH)
-        btn:SetBackdrop({bgFile="Interface/Tooltips/UI-Tooltip-Background",tile=true,tileSize=8,edgeSize=0})
-        btn:SetBackdropColor(0.10,0.10,0.10,1)
-
-        local lbl = btn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-        lbl:SetPoint("LEFT", btn, "LEFT", 6, 0)
-        lbl:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
-        lbl:SetJustifyH("LEFT")
-        -- Always set a safe font first, then attempt the preview font
-        lbl:SetFont("Fonts/ARIALN.TTF", 11, "")
-        if available then
-            lbl:SetText(fo.name)
-            lbl:SetTextColor(0.9,0.9,0.9,1)
-        else
-            lbl:SetText(fo.name.." |cFF666666(not found — place Expressway.ttf in addon Fonts/)|r")
-            lbl:SetTextColor(0.5,0.5,0.5,1)
+    for i, fo in ipairs(fontOptions) do
+        local available = fo.available
+        if not fontBtns[i] then
+            -- First call: create the button frame
+            local btn = CreateFrame("Button", nil, optPanel, "BackdropTemplate")
+            btn:SetSize(290, 20)
+            btn:SetPoint("TOPLEFT", optPanel, "TOPLEFT", 14, -580-(i-1)*24)
+            btn:SetBackdrop({bgFile="Interface/Tooltips/UI-Tooltip-Background",tile=true,tileSize=8,edgeSize=0})
+            btn:SetBackdropColor(0.10,0.10,0.10,1)
+            local lbl = btn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+            lbl:SetPoint("LEFT", btn, "LEFT", 6, 0)
+            lbl:SetJustifyH("LEFT")
+            fontBtns[i] = {btn=btn, lbl=lbl, file=fo.file}
         end
 
-        btn:SetScript("OnClick", function()
+        -- Always update label and handlers (covers both first build and login rebuild)
+        local fb = fontBtns[i]
+        fb.file = fo.file
+        fb.lbl:SetFont("Fonts/ARIALN.TTF", 11, "")
+        if available then
+            fb.lbl:SetText(fo.name)
+            fb.lbl:SetTextColor(0.9,0.9,0.9,1)
+        else
+            fb.lbl:SetText(fo.name .. " |cFF666666(not found)|r")
+            fb.lbl:SetTextColor(0.5,0.5,0.5,1)
+        end
+        fb.btn:SetScript("OnClick", function()
             if not available then return end
             SetSetting("fontFace", fo.file)
             RefreshFontButtons()
             ApplyFontSize()
             RefreshPopupIfOpen()
         end)
-        btn:SetScript("OnEnter", function(self)
+        fb.btn:SetScript("OnEnter", function(self)
             if available then
                 self:SetBackdropColor(0.20,0.18,0.05,1)
             else
                 GameTooltip:SetOwner(self,"ANCHOR_TOP")
-                GameTooltip:SetText("Font not found",1,0.3,0.3)
-                GameTooltip:AddLine("Place Expressway.ttf in AddOns/TLDRDungeonGuide/Fonts/",0.8,0.8,0.8)
-                GameTooltip:AddLine("or install ElvUI, Details!, or SharedMedia",0.8,0.8,0.8)
+                GameTooltip:SetText("Expressway not found",1,0.3,0.3)
+                GameTooltip:AddLine("To enable: install ElvUI (even disabled),",0.8,0.8,0.8)
+                GameTooltip:AddLine("or copy Expressway.ttf from ElvUI into:",0.8,0.8,0.8)
+                GameTooltip:AddLine("AddOns/TLDRDungeonGuide/Fonts/",1,1,0.5)
+                GameTooltip:AddLine("Then /reload",0.6,0.6,0.6)
                 GameTooltip:Show()
             end
         end)
-        btn:SetScript("OnLeave", function(self)
-            RefreshFontButtons()
-            GameTooltip:Hide()
-        end)
-        fontBtns[i] = {btn=btn, file=fo.file}
+        fb.btn:SetScript("OnLeave", function(self) RefreshFontButtons(); GameTooltip:Hide() end)
     end
-
-    -- Show LSM status note below scroll area
-    if lsmActive then
-        if not fontScrollFrame.lsmNote then
-            local note = optPanel:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-            note:SetPoint("TOPLEFT",optPanel,"TOPLEFT",14,-703)
-            note:SetTextColor(0.4,0.8,0.4,1)
-            fontScrollFrame.lsmNote = note
-        end
-        fontScrollFrame.lsmNote:SetText("|cFF66CC66SharedMedia detected — "..#list.." fonts available|r")
-        fontScrollFrame.lsmNote:Show()
-    end
-
     RefreshFontButtons()
 end
 
--- Initial build with built-ins; rebuilt at login if LSM found
 BuildFontButtons()
 
 
@@ -2124,7 +2116,7 @@ end)
 -- resets saved popup size — solves "popup went off-screen" situations.
 local resetPosBtn = CreateFrame("Button",nil,optPanel,"UIPanelButtonTemplate")
 resetPosBtn:SetSize(100,26)
-resetPosBtn:SetPoint("BOTTOM",optPanel,"BOTTOM",0,14)
+resetPosBtn:SetPoint("BOTTOMRIGHT",optPanel,"BOTTOMRIGHT",-86,14)
 resetPosBtn:SetText("Reset Position")
 resetPosBtn:SetScript("OnClick", function()
     -- Bar: back to top-center
@@ -2162,7 +2154,7 @@ end)
 local dungeonMenu = CreateFrame("Frame","MPGDungeonMenu",UIParent,"UIDropDownMenuTemplate")
 local preseasonMenu = CreateFrame("Frame","MPGPreseasonMenu",UIParent,"UIDropDownMenuTemplate")
 
-local function BuildBossSubmenu(sourceTable, level, menuList)
+local function BuildBossSubmenu(sourceTable, isPreseason, level, menuList)
     local dungeon = sourceTable[menuList]
     if not dungeon then return end
     local hdr = UIDropDownMenu_CreateInfo()
@@ -2171,10 +2163,16 @@ local function BuildBossSubmenu(sourceTable, level, menuList)
     for bi, boss in ipairs(dungeon.bosses) do
         local info = UIDropDownMenu_CreateInfo()
         info.text=boss.name; info.notCheckable=true
-        info.arg1=menuList; info.arg2=bi
-        info.func=function(_, di, bossIdx)
+        -- Pack dungeonIdx, bossIdx, and which table into arg1/arg2
+        -- arg1 = dungeonIdx * 100 + bossIdx (max 99 bosses per dungeon, safe)
+        -- arg2 = 1 if preseason, 0 if season1
+        info.arg1 = menuList * 100 + bi
+        info.arg2 = isPreseason and 1 or 0
+        info.func = function(_, packed, tableFlag)
             CloseDropDownMenus()
-            local src = sourceTable
+            local di = math.floor(packed / 100)
+            local bossIdx = packed % 100
+            local src = (tableFlag == 1) and preseasonDungeons or dungeons
             ShowBossGuide(src[di], src[di].bosses[bossIdx], di, bossIdx, src)
         end
         UIDropDownMenu_AddButton(info,level)
@@ -2214,7 +2212,7 @@ local function OpenDungeonMenu()
             UIDropDownMenu_AddButton(close,level)
 
         elseif level == 2 then
-            BuildBossSubmenu(dungeons, level, menuList)
+            BuildBossSubmenu(dungeons, false, level, menuList)
         end
     end, "MENU")
     ToggleDropDownMenu(1,nil,dungeonMenu,frame,0,-4)
@@ -2244,7 +2242,7 @@ local function OpenPreseasonMenu()
             UIDropDownMenu_AddButton(close,level)
 
         elseif level == 2 then
-            BuildBossSubmenu(preseasonDungeons, level, menuList)
+            BuildBossSubmenu(preseasonDungeons, true, level, menuList)
         end
     end, "MENU")
     ToggleDropDownMenu(1,nil,preseasonMenu,frame,0,-4)
@@ -2292,11 +2290,13 @@ initFrame:SetScript("OnEvent", function(self, event)
     RefreshDensityRadios()
     ApplyBarVisibility()
     if event == "PLAYER_LOGIN" then
-        -- Detect SharedMedia fonts now that all addons are loaded
-        DetectSharedMediaFonts()
-        if sharedMediaFonts then
-            BuildFontButtons()  -- Rebuild picker with full LSM list
+        -- Detect Expressway now that all addons (ElvUI, SharedMedia etc) are fully loaded
+        expresswayPath = FindExpresswayFont()
+        if expresswayPath then
+            fontOptions[4].file      = expresswayPath
+            fontOptions[4].available = true
         end
+        BuildFontButtons()  -- rebuild with correct Expressway state
         print(COLOR.TITLE.."[TL;DR Guide]"..COLOR.RESET
               .." Midnight S1 loaded!  Click the bar to browse  |  Gear icon for options  |  /tldr")
     end
