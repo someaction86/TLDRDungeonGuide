@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.4.4 — WoW: Midnight Season 1**
+**Version 1.5.0 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -157,6 +157,13 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 ---
 
 ## Changelog
+
+### v1.5.0 — Raids + UI Overhaul
+- **Raid guides added** — Full TL;DR/Tank/Healer/DPS boss guides for all currently available Season 1 raid bosses across The Voidspire (6 bosses) and The Dreamrift (1 boss). March on Quel'Danas (2 bosses) shows as coming March 31, 2026.
+- **Heroic differences** — Each raid boss guide includes a red-highlighted "HEROIC DIFFERENCES" section at the bottom noting what changes on Heroic difficulty. Confirmed for Averzian, Vorasius, Salhadaar, Vaelgor & Ezzorak, and Crown of the Cosmos.
+- **New bar layout** — Bar now has two rows. Top row: title + gear icon. Bottom row: `[ Dungeons ]` and `[ Raids ]` buttons styled to match the bar aesthetic. Buttons highlight white on hover.
+- **Combined Dungeons menu** — Season 1 and Preseason dungeons are now in one dropdown under the Dungeons button, separated by a divider. No more left-click/right-click split.
+- **Fixed all button click issues** — Root cause was a drag handle child frame intercepting all mouse events. Replaced with direct `RegisterForDrag` on the frame itself, which allows all child buttons to receive clicks correctly.
 
 ### v1.4.4 — Bug Fixes
 - **Boss navigation tooltip** — Tooltip now updates immediately when clicking a nav arrow while already hovering, without requiring the mouse to move away and back.
