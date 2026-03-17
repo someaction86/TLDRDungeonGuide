@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.3.1 — WoW: Midnight Season 1**
+**Version 1.4.1 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -158,7 +158,13 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 
 ## Changelog
 
-### v1.4.0
+### v1.4.1
+- **Fixed font picker** — Fonts now apply correctly. Root cause was `ApplyFontSize()` being called before `SetText()` — WoW resets the font when text is set, overwriting the selection. Order corrected.
+- **Fixed Brief mode** — Guide lines use an em dash (`—`) as the separator, not a double hyphen. The pattern never matched so nothing was trimmed. Fixed to match the correct character.
+- **Fixed boss navigation arrows** — Previous texture path (`UI-SpellbookIcon-PrevPage`) does not exist in current WoW. Replaced with `UI-Panel-ScrollUpButton` textures, rotated to point left and right.
+- **Fixed button overlap in Options panel** — Reset Position button was overlapping Reset to Defaults. All three buttons (Reset to Defaults, Reset Position, Done) are now laid out as a clean evenly-spaced row.
+
+### v1.3.1
 - **Boss navigation arrows** — Prev/Next buttons in the popup title bar let you scroll through every boss without reopening the dropdown. Steps across dungeon boundaries. Hovering shows the upcoming boss and dungeon in a tooltip. Arrows disable at the start/end of each source table.
 - **SharedMedia font integration** — Font picker detects LibSharedMedia-3.0 at login and rebuilds with the full LSM list if found. The picker is now a scrollable frame. Without SharedMedia it falls back to the built-in four fonts. A status line confirms how many LSM fonts were detected.
 - **Guide Density toggle** — New option: Normal (full detail) or Brief (key points only). Brief mode strips everything after the first ` — ` separator in each bullet. Changes apply live to any open popup.
@@ -178,4 +184,3 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 - Role filter, popup window and chat output modes
 - Customisable bar width, transparency, fonts, and colors
 - Draggable bar and popup window, slash command support (`/tldr`)
-- 
