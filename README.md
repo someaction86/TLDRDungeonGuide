@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.4.3 — WoW: Midnight Season 1**
+**Version 1.4.4 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -157,6 +157,11 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 ---
 
 ## Changelog
+
+### v1.4.4 — Bug Fixes
+- **Boss navigation tooltip** — Tooltip now updates immediately when clicking a nav arrow while already hovering, without requiring the mouse to move away and back.
+- **Expressway detection** — Added ElvUI's current font path (`ElvUI/Game/Shared/Media/Fonts/Expressway.ttf`) and direct ElvUI internal table lookup. Backslash normalisation added for ElvUI path compatibility.
+- **Nav arrow tooltip rendering** — Replaced Unicode arrow characters with plain text (`Prev:` / `Next:`) to avoid `[]` rendering in WoW's default fonts.
 
 ### v1.4.3
 - **Fixed font picker** — Fonts now apply and persist correctly. Root cause was WoW resetting a FontString's font on every `SetText` call. Fixed by using a persistent named `Font` object (`CreateFont`) assigned via `SetFontObject`, which survives text updates.
