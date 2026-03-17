@@ -1301,12 +1301,34 @@ navPrev:SetSize(28,18)
 navPrev:SetPoint("RIGHT",popupTitleBar,"RIGHT",-56,0)
 navPrev:SetText("< ")
 navPrev:GetFontString():SetTextColor(1,0.84,0)
+navPrev:SetScript("OnEnter", function(self)
+    if not lastShownTable or not lastShownDungeonIndex or not lastShownBossIndex then return end
+    local bi = lastShownBossIndex
+    local dungeon = lastShownTable[lastShownDungeonIndex]
+    if bi > 1 then
+        GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
+        GameTooltip:SetText("Prev: "..dungeon.bosses[bi-1].name,1,1,1)
+        GameTooltip:Show()
+    end
+end)
+navPrev:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 local navNext = CreateFrame("Button",nil,popupTitleBar,"UIPanelButtonTemplate")
 navNext:SetSize(28,18)
 navNext:SetPoint("RIGHT",popupTitleBar,"RIGHT",-26,0)
 navNext:SetText(" >")
 navNext:GetFontString():SetTextColor(1,0.84,0)
+navNext:SetScript("OnEnter", function(self)
+    if not lastShownTable or not lastShownDungeonIndex or not lastShownBossIndex then return end
+    local bi = lastShownBossIndex
+    local dungeon = lastShownTable[lastShownDungeonIndex]
+    if bi < #dungeon.bosses then
+        GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
+        GameTooltip:SetText("Next: "..dungeon.bosses[bi+1].name,1,1,1)
+        GameTooltip:Show()
+    end
+end)
+navNext:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 -- UpdateNavArrows: enable/disable arrows and set tooltips based on current position
 UpdateNavArrows = function()
@@ -1322,26 +1344,7 @@ UpdateNavArrows = function()
     local hasNext = (bi < #dungeon.bosses)
     if hasPrev then navPrev:Enable() else navPrev:Disable() end
     if hasNext then navNext:Enable() else navNext:Disable() end
-
-    -- Tooltips
-    navPrev:SetScript("OnEnter", function(self)
-        if bi > 1 then
-            GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
-            GameTooltip:SetText("Prev: "..dungeon.bosses[bi-1].name,1,1,1)
-            GameTooltip:Show()
-        end
-    end)
-    navNext:SetScript("OnEnter", function(self)
-        if bi < #dungeon.bosses then
-            GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
-            GameTooltip:SetText("Next: "..dungeon.bosses[bi+1].name,1,1,1)
-            GameTooltip:Show()
-        end
-    end)
 end
-
-navPrev:SetScript("OnLeave", function() GameTooltip:Hide() end)
-navNext:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 navPrev:SetScript("OnClick", function()
     if not lastShownTable or not lastShownDungeonIndex or not lastShownBossIndex then return end
@@ -1437,6 +1440,12 @@ ShowBossInPopup = function(dungeon, boss, dungeonIdx, bossIdx, sourceTable)
     popupWindow:Show()
     popupWindow:Raise()
     if UpdateNavArrows then UpdateNavArrows() end
+    -- Refresh tooltip if mouse is still over a nav button after clicking
+    if GameTooltip:IsOwned(navNext) then
+        navNext:GetScript("OnEnter")(navNext)
+    elseif GameTooltip:IsOwned(navPrev) then
+        navPrev:GetScript("OnEnter")(navPrev)
+    end
 end
 
 local function PrintBossToChat(dungeon, boss)
