@@ -1,6 +1,6 @@
 # TL;DR Dungeon Guide
 
-**Version 1.5.0 — WoW: Midnight Season 1**
+**Version 2.0.0 — WoW: Midnight Season 1**
 
 A compact, in-game boss guide for all Midnight dungeons. Get the essential mechanics for every boss broken down by role — no fluff, no walls of text.
 
@@ -157,6 +157,20 @@ Resets all settings including colors, font, role filter, visibility mode, and ou
 ---
 
 ## Changelog
+
+### v2.0.0 — Full Dungeon Guide Accuracy Pass
+- **Pit of Saron — all 3 bosses corrected:**
+  - Garfrost: replaced WotLK ability names (PERMAFROST, weapon forge phases) with correct Midnight Season 1 mechanics: SIPHONING CHILL, OREBREAKER (boulder interception), GLACIAL OVERLOAD (hide behind boulder), CRYOSTOMP + dispel
+  - Ick and Krick: added missing SHADE SHIFT / Shades of Krick mechanic, corrected MIGHTY STOMP to BLIGHT SMASH, clarified NECROLINK shared health and stack-on-cleave strategy
+  - Scourgelord Tyrannus: replaced Legion OVERLORD'S BRAND with correct Midnight mechanics: SCOURGELORD'S BRAND (knockback + leap), BONE INFUSION (raid AoE), RIME BLAST + Saturated bone pile freezing, ARMY OF THE DEAD
+- **Skyreach — all 4 bosses corrected:**
+  - Ranjit: replaced fabricated WINDWALLS / FOUR WINDS with correct CHAKRAM VORTEX, WIND CHAKRAM (outbound + return path), GALE SURGE knockback, FAN OF BLADES group bleed
+  - Araknath: completely rewritten — previous guide had a fabricated "energy orb soak for 150% buff" mechanic that does not exist. Real fight is ENERGIZE solar beam-blocking, BLAST WAVE (tank must stay in melee), FIERY SMASH frontal, SUPERNOVA amplified by Solar Infusion stacks
+  - Rukhran: added critical missing mechanic — two Sunwings dying in the same spot resurrect. SCREECH is top priority interrupt. SUNBREAK kiting and kill positioning explained
+  - High Sage Viryx: replaced fabricated "eagle catch" mechanic with correct CAST DOWN (kill Solar Zealot add before it drags player off edge), LENS FLARE (chasing fire beam), SCORCHING RAY, SOLAR BLAST interrupt
+- **Seat of the Triumvirate — 2 bosses corrected:**
+  - Zuraal: guide previously said "stand in DECIMATE pools for damage buff" — completely backwards. DECIMATE pools are lethal hazards. Corrected. Fixed ability name VOID ERUPTION to CRASHING VOID
+  - L'ura: replaced old Legion portal/Greater Rift Warden mechanic with correct Midnight Season 1: NOTES OF DESPAIR + DISCORDANT BEAM cleansing, DIRGE OF DESPAIR, ABYSSAL LANCE, SIPHON VOID burn window
 
 ### v1.5.0 — Raids + UI Overhaul
 - **Raid guides added** — Full TL;DR/Tank/Healer/DPS boss guides for all currently available Season 1 raid bosses across The Voidspire (6 bosses) and The Dreamrift (1 boss). March on Quel'Danas (2 bosses) shows as coming March 31, 2026.
