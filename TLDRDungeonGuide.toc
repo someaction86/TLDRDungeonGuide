@@ -2,7 +2,7 @@
 ## Title: TL;DR Dungeon Guide
 ## Notes: TL;DR boss guides with Tank/Healer/DPS breakdowns for all Midnight dungeons
 ## Author: You
-## Version: 1.5.0
+## Version: 2.0.0
 ## DefaultState: enabled
 ## SavedVariables: MPG_Settings
 
